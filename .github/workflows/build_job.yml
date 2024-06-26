@@ -21,23 +21,24 @@ jobs:
         with:
           submodules: recursive
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.X"
+      - name: Install freva rest dependencies
+        run: |
+          python3 -m pip install -e ./freva-rest[dev] ./freva-data-portal-worker
+      - name: Generate self signed keys
+        run: |
+          python3 run_server.py --gen-certs
       - name: Set up services
         run: |
           docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
-      - name: Install freva rest dependencies
+      - name: Waiting for keycloak
         run: |
-          python3 -m pip install -e .[dev] tox
-        working-directory: ./freva-rest
-      - name: Adjusting PATH variable
-        run: echo "~/.local/bin" >> $GITHUB_PATH
+          python run_server.py -w
       - name: Starting the local server
         run: |
-          python -m freva_rest.cli -c api_config.toml --debug --dev &
-      - name: Waiting for 5 sec
-        run: sleep 5
+          python run_server.py -c api_config.toml --debug --dev -p 7777
       - name: Creating docs
         run: tox -e docs
       - name: Setup Pages
@@ -124,7 +125,7 @@ jobs:
         name: Install flit
         run: python -m pip install flit
       -
-        name: Building freva-deployment 📦 with flit
+        name: Building freva-client 📦 with flit
         run: flit build
         working-directory: freva-client
       -

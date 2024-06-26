@@ -1,0 +1,104 @@
+[Unit]
+Description=Start the dask-worker / dask-scheduler service.
+After=network.target
+
+Type=oneshot
+ExecStart=/bin/bash -c '
+set -e
+if [ -w /opt/mamba ];then
+    MAMBA_DIR=/opt/mamba
+else
+    MAMBA_DIR=~/.mamba
+fi
+PKGS="\
+cfgrib \
+cryptography \
+cloudpickle \
+dask[distributed,diagnostics] \
+h5netcdf \
+netcdf4 \
+rasterio \
+xarray \
+mamba \
+git \
+jq \
+zarr"
+MD5SUM=$(echo $PKGS| md5sum | awk '{print $1}')
+if [ ! -f ${MAMBA_DIR}/environment.txt ];then
+    create=true
+elif [ "$(cat ${MAMBA_DIR}/environment.txt)" != "$MD5SUM" ];then
+    create=true
+else
+    create=false
+fi
+echo "MAMBA_DIR=$MAMBA_DIR" > ~/.config/dask-worker-env
+if [ "$create" = true ];then
+    echo "Setting up mamba:"
+    rm -rf ${MAMBA_DIR}
+    ARCH=$(uname -m)
+    CWD=$(readlink -f $(dirname $0))
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR" || { echo "Failed to create temporary directory"; exit 1; }
+
+    case "$ARCH" in
+        x86_64)
+            curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+            ;;
+        aarch64)
+
+            ;;
+        ppc64le)
+            curl -Ls https://micro.mamba.pm/api/micromamba/linux-ppc64le/latest | tar -xvj bin/micromamba
+            ;;
+        *)
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+            ;;
+    esac
+    bin/micromamba create -p ${MAMBA_DIR} -c conda-forge -y $PKGS
+    echo $MD5SUM > ${MAMBA_DIR}/environment.txt
+    rm -fr $TEMP_DIR
+fi
+if [ ! -f ${MAMBA_DIR}/bin/data-loader-worker ];then
+    echo "Setting up the dataportal:"
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR" || { echo "Failed to create temporary directory"; exit 1; }
+    ${MAMBA_DIR}/bin/git clone --recursive -b stream-data https://github.com/FREVA-CLINT/freva-nextgen.git
+    rm -rf ${MAMBA_DIR}/freva-data-portal-worker
+    cp -r freva-nextgen/freva-data-portal-worker ${MAMBA_DIR}/
+    cp -r freva-nextgen/dev-env ${MAMBA_DIR}/freva-data-portal-worker/setup
+    cp freva-nextgen/run_server.py ${MAMBA_DIR}/freva-data-portal-worker/
+    cd ${MAMBA_DIR}/freva-data-portal-worker/
+    ${MAMBA_DIR}/bin/python -m pip install .
+    rm -fr $TEMP_DIR
+fi
+if ([ ! -f "$HOME/data-portal-cluster-config.json" ] && [ "x$IS_WORKER" = x ]);then
+    TEMP_DIR=~ ${MAMBA_DIR}/bin/python ${MAMBA_DIR}/freva-data-portal-worker/run_server.py --gen-certs --script-dir ${MAMBA_DIR}/freva-data-portal-worker/setup
+fi
+export PATH=${MAMBA_DIR}/bin:$PATH
+redis_host=$(base64 -d ~/data-portal-cluster-config.json|jq -r .host)
+dask_host=$(base64 -d ~/data-portal-cluster-config.json|jq -r .scheduler_host)
+scheduler_port=${dask_host##*:}
+scheduler_port=${scheduler_port%%/*}
+port_part=${redis_host##*:}
+redis_port=${port_part%%/*}
+if [ "x$IS_WORKER" = x ];then
+    user=$(base64 -d ~/data-portal-cluster-config.json|jq -r .user)
+    passwd=$(base64 -d ~/data-portal-cluster-config.json|jq -r .passwd)
+    cache_exp=$(base64 -d ~/data-portal-cluster-config.json|jq -r .cache_exp)
+    CMD="${MAMBA_DIR}/bin/python -m data_portal_worker \
+        -c $HOME/data-portal-cluster-config.json -e \
+        $cache_exp -r redis://localhost:$redis_port -p \
+        $scheduler_port"
+else
+    CMD="${MAMBA_DIR}/bin/python -m distributed.cli.dask_worker \
+        ${dask_host} --nanny --nworkers -1 --nthreads 2"
+fi
+echo $CMD
+$CMD
+'
+EnvironmentFile=%h/.config/dask-worker-env
+Restart=always
+
+[Install]
+WantedBy=default.target

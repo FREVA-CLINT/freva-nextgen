@@ -11,14 +11,6 @@ that make up the freva server services as well as the client
 services that provide command line interfaces and python libraries for their
 rest service counterparts.
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Development Environment](#development-environment)
-- [Testing](#testing)
-- [License](#license)
-
 ## Installation
 
 1. Make sure you have Python 3.11+ installed.
@@ -29,10 +21,6 @@ git clone git@github.com:FREVA-CLINT/freva-nextgen.git
 cd freva-nextgen
 ```
 
-3. Install flit:
-Flit is used as the build system for development purpose. Install flit
-into your current python environment:
-
 ```console
 python3 -m pip install flit
 ```
@@ -41,102 +29,55 @@ python3 -m pip install flit
 
 ```console
 cd freva-rest
-flit install -s --deps=all
+python -m pip install -e .[dev]
 ```
 
-5. Install the client library
-
-```console
-cd freva-client
-flit install -s --deps=all
-```
-
-## Development Environment
-Various services, such as apache solr are needed to run the rest services system
-in a development environment. Here we set up these services in a containers
-using the `docker-compose` or `podman-compose` command, ensure
-you have `docker-compose` or `podman-compose` installed on your system.
-Then, run the following command:
-
-```console
-docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
-```
-
-if you use `podman-compose`:
-
-```console
-podman-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
-```
-
-This will start the required services and containers to create the development
-environment. You can now develop and test the project within this environment.
-
-After the containers are up and running you can start the REST server the following:
-
-```console
-freva-rest-server -c api_config.toml --debug --dev
-```
-
-The ``--debug`` and ``--dev`` flag will make sure that any changes are loaded.
-You can choose any port you like. Furthermore the ``--dev`` flag will pre
-load any existing test data. If you don't like that simply do not pass the
-``--dev`` flag.
-
-
-## Testing
-
-Unit tests, Example notebook tests, type annotations and code style tests
-are done with [tox](https://tox.wiki/en/latest/). To run all tests, linting
-in parallel simply execute the following command:
-
-```console
-tox -p 3
-```
-You can also run the each part alone, for example to only check the code style:
-
-```console
-tox -e lint
-```
-available options are ``lint``, ``types``, ``test``.
-
-Tox runs in a separate python environment to run the tests in the current
-environment use:
-
-```console
-pytest
-```
-### Creating a new release.
-
-Once the development is finished and you decide that it's time for a new
-release of the software use the following command to trigger a release
-procedure:
-
-```console
-tox -e release
-```
-
-This will check the current version of the `main` branch and trigger
-a GitHub continuous integration pipeline to create a new release. The procedure
-performs a couple of checks, if theses checks fail please make sure to address
-the issues.
-
-## Docker production container
+## Freva-rest production docker container
 It's best to use the system in production within a dedicated docker container.
 You can pull the container from the GitHub container registry:
 
 ```console
-docker pull ghcr.io/freva-clint/databrowserapi:latest
+docker pull ghcr.io/freva-clint/freva-rest:latest
 ```
 
-There are two fundamental different options to configure the service.
+By default the container starts with the ``freva-rest-service`` command.
+The following default values are available on start up:
 
-1. via the `config` ``.toml`` file.
-2. via environment variables.
+```console
+reva-rest-server --help                                                                                                                                     (python3_12)
 
-Note, that the order here is important. First, any configuration from the
-config file is loaded, only if the configuration wasn't found in the config
-file environment variables are evaluated. The following environment
-variables can be set:
+ Usage: freva-rest-server [OPTIONS]
+
+ Start the freva rest API.
+
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --config-file         -c                PATH                       Path to the server configuration file                                                                 │
+│                                                                    [default: /home/wilfred/workspace/freva-nextgen/freva-rest/src/freva_rest/api_config.toml]            │
+│ --port                -p                INTEGER                    The port the api is running on [default: 8080]                                                        │
+│ --services            -s                [zarr-stream|databrowser]  Set additional services this rest API should serve. [default: zarr-stream, databrowser]               │
+│ --cert-dir                              TEXT                       Set the path to the directory contaning the tls cert and key files that are used to establish a       │
+│                                                                    secure connection, if you set the it will be assumed that cert file is saved as client-cert.pem and   │
+│                                                                    the key file client-key.pem. This flag can be used as a short cut instead of using the `--tls-cert`   │
+│                                                                    and `--tls-key` flats                                                                                 │
+│                                                                    [default: None]                                                                                       │
+│ --tls-cert                              TEXT                       Set the path to the tls certificate file that is used to establish a secure connection to the data    │
+│                                                                    portal cache.                                                                                         │
+│                                                                    [default: None]                                                                                       │
+│ --tls-key                               TEXT                       Set the path to the tls key file that is used to establish a secure connection to the data portal     │
+│                                                                    cache.                                                                                                │
+│                                                                    [default: None]                                                                                       │
+│ --dev                     --no-dev                                 Add test data to the dev solr. [default: no-dev]                                                      │
+│ --debug                   --no-debug                               Turn on debug mode. [default: no-debug]                                                               │
+│ --install-completion                                               Install completion for the current shell.                                                             │
+│ --show-completion                                                  Show completion for the current shell, to copy it or customize the installation.                      │
+│ --help                                                             Show this message and exit.                                                                           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+You can either adjust the server settings by overriding the default flags
+listed above or setting environment variables in the container.
+
+The following environment variables can be set:
 
 - ``DEBUG``: Start server in debug mode (1), (default: 0 -> no debug).
 - ``API_PORT``: the port the rest service should be running on (default 8080).
@@ -151,11 +92,24 @@ variables can be set:
 - ``MONGO_USER``: user name for the mongodb.
 - ``MONGO_PASSWORD``: password to log on to the mongodb.
 - ``MONGO_DB``: database name of the mongodb instance.
+- ``API_URL``: url of the machine that runs of the rest api
+- ``API_CACHE_EXP``: expiry time in seconds of the cached data
+- ``REDIS_HOST``: Host and port of the redis cache
+                  Host name and port should separated by a ``:``, for
+                  example ``localhost:5672``
+- ``REDIS_PASS``: Password for the redis connection.
+- ``REDIS_USER``: Username for the redis connection.
+- ``REDIS_SSL_CERTFILE``: Path to the TSL certificate file used to encrypt
+                          the redis connection.
+- ``REDIS_SSL_KEYFILE``: Path to the TSL key file used to encrypt the redis
+                         connection.
+- ``KEYCLOAK_HOST``: Host name where the keycloak instance is running.
+- ``KEYCLOAK_REALM``: Name of the keycloak realm, defaults to freva.
+- ``KEYCLOAK_CLIENT_ID``: Name of the client (app) that is used to create
+                          the access tokens, defaults to freva
+- ``KEYCLOAK_CLIENT_SECRET``: You can set a client secret, if you have
+                              configured your keycloak to use a client secret.
 
 > ``📝`` You can override the path to the default config file using the ``API_CONFIG``
          environment variable. The default location of this config file is
          ``/opt/databrowser/api_config.toml``.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

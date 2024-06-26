@@ -6,7 +6,14 @@ env = [
     "MONGO_PASSWORD=secret",
     "SOLR_HOST=localhost:8983",
     "SOLR_CORE=files",
-    "FREVA_CONFIG=${PWD}/dev-env/freva.toml",
+    "FREVA_CONFIG={PWD}/dev-env/freva.toml",
+    "REDIS_SSL_CERTFILE={PWD}/dev-env/certs/client-cert.pem",
+    "REDIS_SSL_KEYFILE={PWD}/dev-env/certs/client-key.pem",
+    "REDIS_HOST=redis://localhost:6379",
+    "REDIS_USER=redis",
+    "REDIS_PASS=secret",
+    "API_SERVICES=zarr-stream,databrowser",
+
 ]
 filterwarnings = ["ignore::UserWarning"]
 [tool.flake8]
@@ -27,6 +34,7 @@ check_untyped_defs = true
 disallow_untyped_decorators = true
 warn_redundant_casts = true
 ignore_missing_imports = true
+allow_untyped_calls = true
 
 [tool.tox]
 legacy_tox_ini = """
@@ -39,9 +47,9 @@ passenv = *
 parallel_show_output = false
 [testenv:test]
 description = "Run the unit tests."
-deps = -c {toxinidir}/.github/dependabot/constraints.txt
-       -e ./freva-rest
+deps = -e ./freva-rest
        -e ./freva-client
+       -e ./freva-data-portal-worker
        httpx
        pytest
        pytest-asyncio
@@ -51,15 +59,14 @@ deps = -c {toxinidir}/.github/dependabot/constraints.txt
        pymongo
        pytest-env
 
-commands_pre = - python3 {toxinidir}/run_server.py freva-rest-server -c {toxinidir}/api_config.toml --debug --dev
-commands_post = - python3 {toxinidir}/run_server.py --kill
 commands =
-    pytest -vv --cov=freva-rest --cov=freva-client --cov-report=html:coverage_report --junitxml report.xml --cov-report xml .
+    pytest -vv --cov=freva-rest --cov=freva-client --cov=freva-data-portal-worker --cov-report=html:coverage_report --junitxml report.xml --cov-report xml tests
     python3 -m coverage report --fail-under=98.5 --precision=2
 [testenv:docs]
 description = "Create the documentation."
 deps = -e ./freva-rest
        -e ./freva-client
+       -e ./freva-data-portal-worker
        sphinx-execute-code-python3
        sphinx-code-tabs
        sphinx-copybutton
@@ -72,25 +79,27 @@ setenv =
 allowlist_externals = make
 commands = make -C docs clean
            make -C docs html
-commands_pre = - python3 {toxinidir}/run_server.py python -m freva_rest.cli -c {toxinidir}/api_config.toml --debug --dev
-commands_post = - python3 {toxinidir}/run_server.py --kill
 [testenv:lint]
 description = "Check code quality."
 deps = -e ./freva-rest
        -e ./freva-client
+       -e ./freva-data-portal-worker
        black
        isort
        flake8
        pytest-stub
 commands =
-    python3 -m isort --check --profile black -t py311 -l 79 freva-rest/src
-    python3 -m isort --check --profile black -t py311 -l 79 freva-client/src
-    python3 -m flake8 freva-client/src --count --max-complexity=8 --ignore=F405,F403,W503 --max-line-length=88 --statistics --show-source
-    python3 -m flake8 freva-rest/src --count --max-complexity=8 --ignore=F405,F403,W503 --max-line-length=88 --statistics --show-source
-commands_post =
+    python3 -m isort --check --profile black -t py312 -l 79 freva-rest/src
+    python3 -m isort --check --profile black -t py312 -l 79 freva-client/src
+    python3 -m isort --check --profile black -t py312 -l 79 freva-data-portal-worker/src
+    python3 -m flake8 freva-client/src --count --max-complexity=10 --ignore=F405,F403,W503 --max-line-length=88 --statistics --show-source
+    python3 -m flake8 freva-rest/src --count --max-complexity=10 --ignore=F405,F403,W503 --max-line-length=88 --statistics --show-source
+    python3 -m flake8 freva-data-portal-worker/src --count --max-complexity=10 --ignore=F405,F403,W503 --max-line-length=88 --statistics --show-source
 [testenv:types]
 description = "Static type checking."
 deps = ./freva-rest
+       ./freva-client
+       ./freva-data-portal-worker
        mypy
        motor-stubs
        pytest-stub
@@ -117,4 +126,8 @@ deps = git-python
        packaging
        requests
        tomli
+[testenv:build]
+commands = pyinstaller --onefile --name data-loader-worker freva-data-portal/pyinstaller.py
+deps = ./freva-data-portal
+       pyinstaller
 """

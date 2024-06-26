@@ -17,20 +17,21 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.X"
+      - name: Install dependencies
+        run: |
+          python3 -m pip install -e ./freva-rest[dev] ./freva-data-portal-worker
+      - name: Generate self signed keys
+        run: |
+          python3 run_server.py --gen-certs
       - name: Set up services
         run: |
           docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
-      - name: Install dependencies
+      - name: Waiting for keycloak
         run: |
-          python3 -m pip install -e .[dev]
-        working-directory: ./freva-rest
-      - name: Adjusting PATH variable
-        run: echo "~/.local/bin" >> $GITHUB_PATH
+          python run_server.py -w
       - name: Starting the local server
         run: |
-          python -m freva_rest.cli -c api_config.toml --debug --dev &
-      - name: Waiting for 10 sec
-        run: sleep 5
+          python run_server.py -c api_config.toml --debug --dev -p 7777
       - name: Linting, type checking and docs with tox
         run: tox run-parallel --parallel-no-spinner
 
@@ -49,20 +50,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{matrix.python-version}}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install -e ./freva-rest[dev] ./freva-data-portal-worker
+      - name: Generate self signed keys
+        run: |
+          python3 run_server.py --gen-certs
       - name: Set up services
         run: |
           docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
-      - name: Install dependencies
+      - name: Waiting for keycloak
         run: |
-          python3 -m pip install -e .[dev]
-        working-directory: ./freva-rest
-      - name: Adjusting PATH variable
-        run: echo "~/.local/bin" >> $GITHUB_PATH
-      - name: Starting the local server
-        run: |
-          python -m freva_rest.cli -c api_config.toml --debug --dev &
-      - name: Waiting for 5 sec
-        run: sleep 5
+          python run_server.py -w
       - name: Run tests
         run: tox -e test
       - name: Upload coverage to Codecov
@@ -85,6 +84,10 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
+      - name: Generate self signed keys
+        run: |
+          python3 run_server.py --gen-certs
+
       - name: Set up services
         run: |
           docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
@@ -99,6 +102,10 @@ jobs:
           push: false
           load: true
           tags: freva-rest:latest
+
+      - name: Waiting for keycloak
+        run: |
+          python3 run_server.py -w
 
       - name: Check databrowser image
         run: python3 dev-env/check-container.py

@@ -21,10 +21,10 @@ logger_format = logging.Formatter(
 
 logger_stream_handle = RichHandler(
     rich_tracebacks=True,
-    show_path=True,
+    show_path=False,
     markup=True,
     log_time_format="[%Y-%m-%dT%H:%M:%S]",
-    console=Console(soft_wrap=True, stderr=True),
+    console=Console(soft_wrap=False, stderr=True),
 )
 logger_stream_handle.setLevel(logging.ERROR)
 logging.basicConfig(

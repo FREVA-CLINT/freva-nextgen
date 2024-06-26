@@ -1,26 +1,18 @@
 """Main script that runs the rest API."""
 
+import os
 from typing import Annotated, List, Literal, Union
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
-from freva_rest.logger import logger
+from freva_rest.auth import TokenPayload, get_current_user
 from freva_rest.rest import app, server_config
 
 from .core import FlavourType, SolrSearch, Translator
 from .schema import Required, SearchFlavours, SolrSchema
 
 
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """Close the MongoDB connection on application shutdown."""
-    try:
-        server_config.mongo_client.close()
-    except Exception as error:  # pragma: no cover
-        logger.warning("Could not shutdown mongodb connection: %s", error)
-
-
-@app.get("/api/databrowser/overview")
+@app.get("/api/databrowser/overview", tags=["Data search"])
 async def overview() -> SearchFlavours:
     """Get all available search flavours and thier attributes.
 
@@ -41,12 +33,13 @@ async def overview() -> SearchFlavours:
                 for f in translator.foreward_lookup.values()
                 if f not in translator.cordex_keys
             ]
-    return SearchFlavours(
-        flavours=list(Translator.flavours), attributes=attributes
-    )
+    return SearchFlavours(flavours=list(Translator.flavours), attributes=attributes)
 
 
-@app.get("/api/databrowser/intake_catalogue/{flavour}/{uniq_key}")
+@app.get(
+    "/api/databrowser/intake_catalogue/{flavour}/{uniq_key}",
+    tags=["Data search"],
+)
 async def intake_catalogue(
     flavour: FlavourType,
     uniq_key: Literal["file", "uri"],
@@ -82,22 +75,23 @@ async def intake_catalogue(
         raise HTTPException(status_code=413, detail="Result stream too big.")
     file_name = f"IntakeEsmCatalogue_{flavour}_{uniq_key}.json"
     return StreamingResponse(
-        solr_search.intake_catalogue(result),
+        solr_search.intake_catalogue(result.catalogue),
         status_code=status_code,
         media_type="application/x-ndjson",
         headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
     )
 
 
-@app.get("/api/databrowser/metadata_search/{flavour}/{uniq_key}")
+@app.get(
+    "/api/databrowser/metadata_search/{flavour}/{uniq_key}",
+    tags=["Data search"],
+)
 async def metadata_search(
     flavour: FlavourType,
     uniq_key: Literal["file", "uri"],
     multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
     translate: Annotated[bool, SolrSchema.params["translate"]] = True,
-    facets: Annotated[
-        Union[List[str], None], SolrSchema.params["facets"]
-    ] = None,
+    facets: Annotated[Union[List[str], None], SolrSchema.params["facets"]] = None,
     request: Request = Required,
 ) -> JSONResponse:
     """Get the search facets.
@@ -119,16 +113,17 @@ async def metadata_search(
         start=0,
         **SolrSchema.process_parameters(request),
     )
-    status_code, result = await solr_search.extended_search(
-        facets or [], max_results=0
-    )
+    status_code, result = await solr_search.extended_search(facets or [], max_results=0)
     await solr_search.store_results(result.total_count, status_code)
     output = result.dict()
     del output["search_results"]
     return JSONResponse(content=output, status_code=status_code)
 
 
-@app.get("/api/databrowser/extended_search/{flavour}/{uniq_key}")
+@app.get(
+    "/api/databrowser/extended_search/{flavour}/{uniq_key}",
+    tags=["Data search"],
+)
 async def extended_search(
     flavour: FlavourType,
     uniq_key: Literal["file", "uri"],
@@ -136,9 +131,7 @@ async def extended_search(
     multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
     translate: Annotated[bool, SolrSchema.params["translate"]] = True,
     max_results: Annotated[int, SolrSchema.params["batch_size"]] = 150,
-    facets: Annotated[
-        Union[List[str], None], SolrSchema.params["facets"]
-    ] = None,
+    facets: Annotated[Union[List[str], None], SolrSchema.params["facets"]] = None,
     request: Request = Required,
 ) -> JSONResponse:
     """Get the search facets."""
@@ -158,7 +151,7 @@ async def extended_search(
     return JSONResponse(content=result.dict(), status_code=status_code)
 
 
-@app.get("/api/databrowser/data_search/{flavour}/{uniq_key}")
+@app.get("/api/databrowser/data_search/{flavour}/{uniq_key}", tags=["Data search"])
 async def data_search(
     flavour: FlavourType,
     uniq_key: Literal["file", "uri"],
@@ -185,10 +178,60 @@ async def data_search(
         translate=translate,
         **SolrSchema.process_parameters(request),
     )
-    status_code, result = await solr_search.init_stream()
-    await solr_search.store_results(result.total_count, status_code)
+    status_code, total_count = await solr_search.init_stream()
+    await solr_search.store_results(total_count, status_code)
     return StreamingResponse(
-        solr_search.stream_response(result),
+        solr_search.stream_response(),
+        status_code=status_code,
+        media_type="text/plain",
+    )
+
+
+@app.get(
+    "/api/databrowser/load/{flavour}",
+    status_code=status.HTTP_201_CREATED,
+    tags=["Load data"],
+)
+async def load_data(
+    flavour: FlavourType,
+    start: Annotated[int, SolrSchema.params["start"]] = 0,
+    multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
+    translate: Annotated[bool, SolrSchema.params["translate"]] = True,
+    catalogue_type: Annotated[
+        Literal["intake", None],
+        Query(
+            title="Catalogue type",
+            alias="catalogue-type",
+            description=(
+                "Set the type of catalogue you want to create from this" "query"
+            ),
+        ),
+    ] = None,
+    request: Request = Required,
+    current_user: TokenPayload = Depends(get_current_user),
+) -> StreamingResponse:
+    """Search for datasets and stream the results as zarr."""
+    if "zarr-stream" not in os.getenv("API_SERVICES", ""):
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Service not enabled.",
+        )
+    solr_search = await SolrSearch.validate_parameters(
+        server_config,
+        flavour=flavour,
+        uniq_key="uri",
+        start=start,
+        multi_version=multi_version,
+        translate=translate,
+        **SolrSchema.process_parameters(request, "catalogue-type"),
+    )
+    _, total_count = await solr_search.init_stream()
+    status_code = status.HTTP_201_CREATED
+    if total_count < 1:
+        status_code = status.HTTP_400_BAD_REQUEST
+    await solr_search.store_results(total_count, status_code)
+    return StreamingResponse(
+        solr_search.zarr_response(catalogue_type, total_count),
         status_code=status_code,
         media_type="text/plain",
     )

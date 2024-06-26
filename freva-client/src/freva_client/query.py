@@ -4,12 +4,27 @@ import sys
 from collections import defaultdict
 from fnmatch import fnmatch
 from functools import cached_property
-from typing import Dict, Iterator, List, Literal, Optional, Tuple, Union, cast
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
+import intake
+import intake_esm
 import requests
 import yaml
 from rich import print as pprint
 
+from .auth import Auth, Token
 from .utils import logger
 from .utils.databrowser_utils import Config
 
@@ -67,6 +82,9 @@ class databrowser:
         url where the freva web site can be found. Such as www.freva.dkrz.de.
         By default no host name is given and the host name will be taken from
         the freva config file.
+    stream_zarr: bool, default: False
+        Create a zarr stream for all search results. When set to true the
+        files are served in zarr foramt and can be opened from anywhere.
     multiversion: bool, default: False
         Select all versions and not just the latest version (default).
     fail_on_error: bool, default: False
@@ -149,6 +167,39 @@ class databrowser:
         db = databrowser("reana*", realm="ocean", flavour="cmip6")
         for file in db:
             print(file)
+
+    If you don't have direct access to the data, for example because you are
+    not directly logged in to the computer where the data is stored you can
+    set ``stream_zarr=True``. The data will then be
+    provisioned in zarr format and can be opened from anywhere. But bear in
+    mind that zarr streams if not accessed in time will expire. Since the
+    data can be accessed from anywhere you will also have to authenticate
+    before you are able to access the data. Refer also to the
+    :py:meth:`freva_client.authenticate` method.
+
+    .. execute_code::
+
+        from freva_client import authenticate, databrowser
+        token_info = authenticate(username="janedoe")
+        db = databrowser(dataset="cmip6-fs", stream_zarr=True)
+        zarr_files = list(db)
+        print(zarr_files)
+
+    After you have created the paths to the zarr files you can open them
+
+    ::
+
+        import xarray as xr
+        dset = xr.open_dataset(
+           zarr_files[0],
+           chunks="auto",
+           engine="zarr",
+           storage_options={"header":
+                {"Authorization": f"Bearer {token_info['access_token']}"}
+           }
+        )
+
+
     """
 
     def __init__(
@@ -159,6 +210,7 @@ class databrowser:
         time: Optional[str] = None,
         host: Optional[str] = None,
         time_select: Literal["flexible", "strict", "file"] = "flexible",
+        stream_zarr: bool = False,
         multiversion: bool = False,
         fail_on_error: bool = False,
         **search_keys: Union[str, List[str]],
@@ -167,6 +219,7 @@ class databrowser:
         self._fail_on_error = fail_on_error
         self._cfg = Config(host, uniq_key=uniq_key, flavour=flavour)
         self._flavour = flavour
+        self._stream_zarr = stream_zarr
         facet_search: Dict[str, List[str]] = defaultdict(list)
         for key, value in search_keys.items():
             if isinstance(value, str):
@@ -201,13 +254,21 @@ class databrowser:
 
         if facets and num_facets == 0:
             # TODO: This isn't pretty, but if a user requested a search
-            # string doesn't exist than we have to somehow make the search
+            # string that doesn't exist than we have to somehow make the search
             # return nothing.
             search_kw = {primary_key: ["NotAvailable"]}
         self._params.update(search_kw)
 
     def __iter__(self) -> Iterator[str]:
-        result = self._get(self._cfg.search_url)
+        query_url = self._cfg.search_url
+        headers = {}
+        if self._stream_zarr:
+            query_url = self._cfg.zarr_loader_url
+            auth = Auth()
+            auth.check_authentication(auth_url=self._cfg.auth_url)
+            token = cast(Token, auth.auth_token)
+            headers = {"Authorization": f"Bearer {token['access_token']}"}
+        result = self._get(query_url, headers=headers, stream=True)
         if result is not None:
             try:
                 for res in result.iter_lines():
@@ -273,6 +334,60 @@ class databrowser:
         if result:
             return cast(int, result.json().get("total_count", 0))
         return 0
+
+    def _create_intake_catalogue_file(self, filename: str) -> None:
+        """Create an intake catalogue file."""
+        kwargs: Dict[str, Any] = {"stream": True}
+        url = self._cfg.intake_url
+        if self._stream_zarr:
+            auth = Auth()
+            auth.check_authentication(auth_url=self._cfg.auth_url)
+            token = cast(Token, auth.auth_token)
+            url = self._cfg.zarr_loader_url
+            kwargs["headers"] = {"Authorization": f"Bearer {token['access_token']}"}
+            kwargs["params"] = {"catalogue-type": "intake"}
+        result = self._get(url, **kwargs)
+        if result is None:
+            raise ValueError("No results found")
+
+        try:
+            Path(filename).parent.mkdir(exist_ok=True, parents=True)
+            with open(filename, "bw") as stream:
+                for content in result.iter_content(decode_unicode=False):
+                    stream.write(content)
+        except Exception as error:
+            raise ValueError(f"Couldn't write catalogue content: {error}") from None
+
+    def intake_catalogue(self) -> intake_esm.core.esm_datastore:
+        """Create an intake esm catalogue object from the search.
+
+        This method creates a intake-esm catalogue from the current object
+        search. Instead of having the original files as target objects you can
+        also choose to stream the files via zarr.
+
+        Returns
+        ~~~~~~~
+        intake_esm.core.esm_datastore: intake-esm catalogue.
+
+        Raises
+        ~~~~~~
+        ValueError: If user is not authenticated or catalogue creation failed.
+
+        Example
+        ~~~~~~~
+        Let's create an intake-esm catalogue that points points allows for
+        streaming the target data as zarr:
+
+        .. execute_code::
+
+            from freva_client import databrowser
+            db = databrowser(dataset="cmip6-fs", stream_zarr=True)
+            cat = db.intake_catalogue()
+            print(cat.df)
+        """
+        with NamedTemporaryFile(suffix=".json") as temp_f:
+            self._create_intake_catalogue_file(temp_f.name)
+            return intake.open_esm_datastore(temp_f.name)
 
     @classmethod
     def count_values(
@@ -370,6 +485,7 @@ class databrowser:
             multiversion=multiversion,
             fail_on_error=fail_on_error,
             uniq_key="file",
+            stream_zarr=False,
             **search_keys,
         )
         result = this._facet_search(extended_search=extended_search)
@@ -525,6 +641,7 @@ class databrowser:
             multiversion=multiversion,
             fail_on_error=fail_on_error,
             uniq_key="file",
+            stream_zarr=False,
             **search_keys,
         )
         return {
@@ -596,11 +713,13 @@ class databrowser:
             contraints = data["primary_facets"]
         return {f: v for f, v in data["facets"].items() if f in contraints}
 
-    def _get(self, url: str) -> Optional[requests.models.Response]:
+    def _get(self, url: str, **kwargs: Any) -> Optional[requests.models.Response]:
         """Apply the get method to the databrowser."""
         logger.debug("Searching %s with parameters: %s", url, self._params)
+        params = kwargs.pop("params", {})
+        kwargs.setdefault("timeout", 30)
         try:
-            res = requests.get(url, params=self._params, timeout=30)
+            res = requests.get(url, params={**self._params, **params}, **kwargs)
             res.raise_for_status()
             return res
         except KeyboardInterrupt:

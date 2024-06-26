@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import rich.logging
+from rich.console import Console
 
 THIS_NAME: str = "freva-rest"
 LOG_DIR: Path = Path(
@@ -30,7 +31,15 @@ logger_file_handle.setFormatter(logger_format)
 logger_file_handle.setLevel(logging.INFO)
 
 
-logger_stream_handle = rich.logging.RichHandler(rich_tracebacks=True)
+logger_stream_handle = rich.logging.RichHandler(
+    rich_tracebacks=True,
+    show_path=True,
+    console=Console(
+        soft_wrap=False,
+        force_jupyter=False,
+        stderr=True,
+    ),
+)
 logger_stream_handle.setLevel(logging.INFO)
 
 logger = logging.getLogger(THIS_NAME)

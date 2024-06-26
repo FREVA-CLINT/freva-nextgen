@@ -1,7 +1,7 @@
 FROM python:latest as base
 ARG VERSION
 LABEL org.opencontainers.image.authors="DRKZ-CLINT"
-LABEL org.opencontainers.image.source="https://github.com/FREVA-CLINT/databrowserAPI"
+LABEL org.opencontainers.image.source="https://github.com/FREVA-CLINT/freva-nextgen/freva-rest"
 LABEL org.opencontainers.image.version="$VERSION"
 ENV API_CONFIG=/opt/freva-rest/api_config.toml \
     API_PORT=8080\

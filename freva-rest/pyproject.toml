@@ -20,15 +20,25 @@ dynamic = ["version"]
 requires-python = ">=3.9"
 dependencies = [
 "aiohttp",
+"email-validator",
 "fastapi",
+"dask",
+"pyjwt",
 "typer",
 "uvicorn",
 "python-dotenv",
 "python-dateutil",
+"python-multipart",
 "tomli",
 "rich",
 "motor",
 "requests",
+"redis",
+"pika",
+"paramiko",
+"uuid",
+"typing_extensions",
+"zarr",
 ]
 [project.scripts]
 freva-rest-server = "freva_rest.cli:cli"
@@ -38,11 +48,20 @@ Issues = "https://github.com/FREVA-CLINT/freva-nextgen/issues"
 Source = "https://github.com/FREVA-CLINT/freva-nextgen/"
 
 [project.optional-dependencies]
-dev = ["tox"]
+dev = ["tox", "cryptography", "intake-esm"]
+tests = ["xarray",
+         "intake-esm",
+         "pytest",
+         "pytest-env",
+         "httpx",
+         "mock",
+         "pytest-mock",
+         "pytest-cov",
+         ]
 
 [tool.setuptools.package-data]
 freva_rest = ["*.toml"]
-databrowser_api = ["tests/mock/*.json"]
+databrowser_api = ["mock/*.json"]
 [tool.distutils.bdist_wheel]
 universal = true
 [tool.setuptools.dynamic]

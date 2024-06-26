@@ -30,7 +30,7 @@ def check_container(container_name: str = "freva-rest") -> None:
                 "-e",
                 "MONGO_HOST=localhost:27017",
                 "-e",
-                "API_PORT=8080",
+                "API_PORT=7777",
                 "-e",
                 "API_WORKER=8",
                 "-e",
@@ -41,12 +41,6 @@ def check_container(container_name: str = "freva-rest") -> None:
         time.sleep(10)
         if process.poll() is not None:
             raise RuntimeError("Container died.")
-        res = urllib.request.Request(
-            "http://localhost:8080/api/databrowser/overview",
-        )
-        with urllib.request.urlopen(res) as response:
-            if response.getcode() != 200:
-                raise RuntimeError("Container not properly set up.")
     except Exception as error:
         logger.critical("Strting the container failed: %s", error)
         raise

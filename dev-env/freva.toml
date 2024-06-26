@@ -1,4 +1,4 @@
 # Central freva config file
 [freva]
 project_name = "freva-dev"
-host = "localhost:8080"
+host = "localhost:7777"

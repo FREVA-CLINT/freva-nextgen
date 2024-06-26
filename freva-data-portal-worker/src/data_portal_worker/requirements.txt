@@ -1,0 +1,20 @@
+# These are the requirements that are needed to run the data loading worker
+# on a remote machine.
+
+appdirs
+asyncssh
+bokeh
+cfgrib
+cloudpickle
+dask[distributed,diagnostics]
+h5netcdf
+jupyter-server-proxy
+netcdf4
+rasterio
+redis
+requests
+rioxarray
+typer
+xarray
+xpublish
+zarr

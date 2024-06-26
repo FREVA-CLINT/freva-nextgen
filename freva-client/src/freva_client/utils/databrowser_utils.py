@@ -27,7 +27,8 @@ class Config:
         flavour: str = "freva",
     ) -> None:
 
-        self.databrowser_url = self.get_databrowser_url(host)
+        self.databrowser_url = f"{self.get_api_url(host)}/databrowser"
+        self.auth_url = f"{self.get_api_url(host)}/auth/v2"
         self.uniq_key = uniq_key
         self._flavour = flavour
 
@@ -57,7 +58,9 @@ class Config:
             host = f"{host}:{port}"
         return f"{scheme}://{host}"
 
-    def _read_config(self, path: Path, file_type: Literal["toml", "ini"]) -> str:
+    def _read_config(
+        self, path: Path, file_type: Literal["toml", "ini"]
+    ) -> str:
         """Read the configuration."""
         data_types = {"toml": self._read_toml, "ini": self._read_ini}
         try:
@@ -72,7 +75,9 @@ class Config:
         try:
             res = requests.get(f"{self.databrowser_url}/overview", timeout=3)
         except requests.exceptions.ConnectionError:
-            raise ValueError(f"Could not connect to {self.databrowser_url}") from None
+            raise ValueError(
+                f"Could not connect to {self.databrowser_url}"
+            ) from None
         return cast(Dict[str, Any], res.json())
 
     def _get_databrowser_host_from_config(self) -> str:
@@ -87,7 +92,9 @@ class Config:
             Path(appdirs.user_config_dir("freva")) / "freva.toml": "toml",
             Path(self.get_dirs(user=True)) / "freva.toml": "toml",
             freva_config: "toml",
-            Path(os.environ.get("EVALUATION_SYSTEM_CONFIG_FILE") or eval_conf): "ini",
+            Path(
+                os.environ.get("EVALUATION_SYSTEM_CONFIG_FILE") or eval_conf
+            ): "ini",
         }
         for config_path, config_type in paths.items():
             if config_path.is_file():
@@ -114,13 +121,24 @@ class Config:
     @property
     def search_url(self) -> str:
         """Define the data search endpoint."""
-        return f"{self.databrowser_url}/data_search/" f"{self.flavour}/{self.uniq_key}"
+        return f"{self.databrowser_url}/data_search/{self.flavour}/{self.uniq_key}"
+
+    @property
+    def zarr_loader_url(self) -> str:
+        """Define the url for getting zarr files."""
+        return f"{self.databrowser_url}/load/{self.flavour}/"
+
+    @property
+    def intake_url(self) -> str:
+        """Define the url for creating intake catalogues."""
+        return f"{self.databrowser_url}/intake_catalogue/{self.flavour}/{self.uniq_key}"
 
     @property
     def metadata_url(self) -> str:
         """Define the endpoint for the metadata search."""
         return (
-            f"{self.databrowser_url}/metadata_search/" f"{self.flavour}/{self.uniq_key}"
+            f"{self.databrowser_url}/metadata_search/"
+            f"{self.flavour}/{self.uniq_key}"
         )
 
     @staticmethod
@@ -132,7 +150,7 @@ class Config:
         scheme = scheme or "http"
         return scheme, hostname
 
-    def get_databrowser_url(self, url: Optional[str]) -> str:
+    def get_api_url(self, url: Optional[str]) -> str:
         """Construct the databrowser url from a given hostname."""
         url = url or self._get_databrowser_host_from_config()
         scheme, hostname = self._split_url(url)
@@ -140,7 +158,7 @@ class Config:
         if port:
             hostname = f"{hostname}:{port}"
         hostname = hostname.partition("/")[0]
-        return f"{scheme}://{hostname}/api/databrowser"
+        return f"{scheme}://{hostname}/api"
 
     @staticmethod
     def get_dirs(user: bool = True) -> Path:

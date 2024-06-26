@@ -9,7 +9,7 @@ import os
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Iterator, List, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import requests
 import tomli
@@ -20,13 +20,36 @@ from .logger import THIS_NAME, logger, logger_file_handle
 
 CONFIG_TYPE = TypedDict(
     "CONFIG_TYPE",
-    {"API_CONFIG": Path, "LOGGER": logging.Logger, "NAME": str, "DEBUG": bool},
+    {
+        "API_CONFIG": Path,
+        "LOGGER": logging.Logger,
+        "NAME": str,
+        "DEBUG": bool,
+        "API_CACHE_EXP": int,
+        "API_URL": str,
+        "REDIS_HOST": Optional[str],
+        "REDIS_SSL_CERTFILE": Optional[str],
+        "REDIS_SSL_KEYFILE": Optional[str],
+        "REDIS_PASS": Optional[str],
+        "REDIS_USER": Optional[str],
+        "KEYCLOAK_HOST": str,
+        "KEYCLOAK_REALM": str,
+    },
 )
 defaults: CONFIG_TYPE = {
     "API_CONFIG": Path(__file__).parent / "api_config.toml",
     "LOGGER": logger,
     "NAME": THIS_NAME,
     "DEBUG": False,
+    "API_CACHE_EXP": 3600,
+    "REDIS_SSL_CERTFILE": None,
+    "REDIS_SSL_KEYFILE": None,
+    "REDIS_HOST": None,
+    "REDIS_USER": None,
+    "REDIS_PASS": None,
+    "KEYCLOAK_HOST": "http://localhost:8080",
+    "KEYCLOAK_REALM": "freva",
+    "API_URL": "http://localhost:7777",
 }
 
 
@@ -60,12 +83,40 @@ class ServerConfig:
         )
         self.mongo_collection = self.mongo_client[self.mongo_db]["search_queries"]
         self._solr_fields = self._get_solr_fields()
+        self._keycloak_overview: Optional[Dict[str, Any]] = None
 
     def reload(self) -> None:
         """Reload the configuration."""
         self.config_file = Path(os.environ.get("API_CONFIG") or defaults["API_CONFIG"])
         self.debug = defaults["DEBUG"]
         self.__post_init__()
+
+    @staticmethod
+    def get_keycloak_url() -> str:
+        """Construct the keycloak realm url."""
+        keycloak_host = os.getenv("KEYCLOAK_HOST", defaults["KEYCLOAK_HOST"])
+        keycloak_realm = os.getenv("KEYCLOAK_REALM", defaults["KEYCLOAK_REALM"])
+        _, split, host = keycloak_host.partition("://")
+        if split:
+            host = keycloak_host
+        else:
+            host = f"https://{keycloak_host}"
+        return f"{host}/realms/{keycloak_realm}"
+
+    @property
+    def keycloak_discovery_url(self) -> str:
+        """Construct the discovery url."""
+        return f"{self.get_keycloak_url()}/.well-known/openid-configuration"
+
+    @property
+    def keycloak_overview(self) -> Dict[str, Any]:
+        """Query the url overview from keycloak."""
+        if self._keycloak_overview is not None:
+            return self._keycloak_overview
+        res = requests.get(self.keycloak_discovery_url, verify=False, timeout=3)
+        res.raise_for_status()
+        self._keycloak_overview = res.json()
+        return self._keycloak_overview
 
     @property
     def mongo_url(self) -> str:

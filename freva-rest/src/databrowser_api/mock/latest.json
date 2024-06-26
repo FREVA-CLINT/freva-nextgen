@@ -1,0 +1,3781 @@
+[
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T23:00 TO 2016-09-02T23:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T22:00 TO 2016-09-02T22:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T21:00 TO 2016-09-02T21:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T20:00 TO 2016-09-02T20:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.083Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T19:00 TO 2016-09-02T19:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T18:00 TO 2016-09-02T18:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T17:00 TO 2016-09-02T17:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T16:00 TO 2016-09-02T16:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T15:00 TO 2016-09-02T15:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.083Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T14:00 TO 2016-09-02T14:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.083Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T13:00 TO 2016-09-02T13:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T12:00 TO 2016-09-02T12:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T11:00 TO 2016-09-02T11:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T10:00 TO 2016-09-02T10:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T09:00 TO 2016-09-02T09:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T08:00 TO 2016-09-02T08:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T07:00 TO 2016-09-02T07:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T06:00 TO 2016-09-02T06:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T05:00 TO 2016-09-02T05:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T04:00 TO 2016-09-02T04:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T03:00 TO 2016-09-02T03:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T02:00 TO 2016-09-02T02:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T01:00 TO 2016-09-02T01:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T00:00 TO 2016-09-02T00:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc",
+      "timestamp": 1688275840.0,
+      "uri": "slk:///arch/bb1203/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc",
+      "dataset": [
+         "obs-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "GERICS"
+      ],
+      "model": [
+         "NCC-NorESM1-M-GERICS-REMO2015-v1"
+      ],
+      "experiment": [
+         "rcp85"
+      ],
+      "time_frequency": [
+         "3hr"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "3hr"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2007-01-02T01:30 TO 2007-01-02T04:30]",
+      "file_name": [
+         "/arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc"
+      ],
+      "driving_model": [
+         "NCC-NorESM1-M"
+      ],
+      "rcm_name": [
+         "GERICS-REMO2015"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "/arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc",
+      "timestamp": 1676582270.0,
+      "uri": "slk:///arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc",
+      "dataset": [
+         "cordex-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "CLMcom"
+      ],
+      "model": [
+         "MPI-M-MPI-ESM-LR-CLMcom-CCLM4-8-17-v1"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "day"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "day"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "tas"
+      ],
+      "time": "[1949-12-01T12:00 TO 1949-12-10T12:00]",
+      "file_name": [
+         "/arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.nc"
+      ],
+      "driving_model": [
+         "MPI-M-MPI-ESM-LR"
+      ],
+      "rcm_name": [
+         "CLMcom-CCLM4-8-17"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "/arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.nc",
+      "timestamp": 1683189380.0,
+      "uri": "slk:///arch/bb1203/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.nc",
+      "dataset": [
+         "cordex-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.083Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "reanalysis"
+      ],
+      "institute": [
+         "NOAA"
+      ],
+      "model": [
+         "NODC"
+      ],
+      "experiment": [
+         "OC5"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "ocean"
+      ],
+      "cmor_table": [
+         "Omon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "hc700"
+      ],
+      "time": "[2012-01 TO 2012-12]",
+      "file_name": [
+         "/arch/bb1203/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc"
+      ],
+      "file": "/arch/bb1203/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc",
+      "timestamp": 1676582270.0,
+      "uri": "slk:///arch/bb1203/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc",
+      "dataset": [
+         "reana-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "nextGEMS"
+      ],
+      "product": [
+         "nextgems_cycle2"
+      ],
+      "institute": [
+         "ECMWF-AWI"
+      ],
+      "model": [
+         "IFS-FESOM"
+      ],
+      "experiment": [
+         "HQYS"
+      ],
+      "time_frequency": [
+         "1hr"
+      ],
+      "realm": [
+         "atm"
+      ],
+      "cmor_table": [
+         "inst-or-acc"
+      ],
+      "variable": [
+         "100si",
+         "100u",
+         "100v",
+         "10u",
+         "10v",
+         "2d",
+         "2t",
+         "asn",
+         "blh",
+         "cape",
+         "cdir",
+         "chnk",
+         "ci",
+         "cin",
+         "cp",
+         "dsrp",
+         "e",
+         "es",
+         "ewss",
+         "fal",
+         "fdir",
+         "fsr",
+         "hcc",
+         "lcc",
+         "litota1",
+         "litoti",
+         "lsm",
+         "lsp",
+         "lwcs",
+         "mcc",
+         "msl",
+         "nsss",
+         "par",
+         "pev",
+         "ro",
+         "rsn",
+         "sd",
+         "sf",
+         "skt",
+         "slhf",
+         "smlt",
+         "sp",
+         "sro",
+         "sshf",
+         "ssr",
+         "ssrc",
+         "ssrd",
+         "ssro",
+         "sst",
+         "stl1",
+         "stl2",
+         "stl3",
+         "stl4",
+         "str",
+         "strc",
+         "strd",
+         "swvl1",
+         "swvl2",
+         "swvl3",
+         "swvl4",
+         "tcc",
+         "tciw",
+         "tclw",
+         "tcrw",
+         "tcslw",
+         "tcsw",
+         "tcw",
+         "tcwv",
+         "tisr",
+         "tp",
+         "tsn",
+         "tsr",
+         "tsrc",
+         "ttr",
+         "ttrc",
+         "uvb",
+         "vike",
+         "vipie",
+         "vipile",
+         "vithe",
+         "z"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "uri": "slk:///arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_197901-199812.nc",
+      "time": "[2020-01-20T00:00 TO 2021-01-01T00:00]",
+      "file_name": [
+         "/arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_197901-199812.nc"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_id": [
+         "tco2559"
+      ],
+      "file": "/arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_197901-199812.nc",
+      "timestamp": 1683713280.0,
+      "dataset": [
+         "nextGems"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "CMIP6"
+      ],
+      "product": [
+         "CMIP"
+      ],
+      "institute": [
+         "CSIRO-ARCCSS"
+      ],
+      "model": [
+         "ACCESS-CM2"
+      ],
+      "experiment": [
+         "amip"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "Amon"
+      ],
+      "ensemble": [
+         "r1i1p1f1"
+      ],
+      "variable": [
+         "ua"
+      ],
+      "time": "[1979-01 TO 2014-12]",
+      "file_name": [
+         "/arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "file": "/arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc",
+      "timestamp": 1683151740.0,
+      "uri": "slk:///arch/bb1203/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc",
+      "dataset": [
+         "cmip6-hsm"
+      ],
+      "format": [
+         "nc"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T00:00 TO 2016-09-02T23:30]",
+      "file_name": [
+         "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609022330.zarr"
+      ],
+      "file": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609022330.zarr",
+      "timestamp": 1676578940.0,
+      "uri": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609022330.zarr",
+      "dataset": [
+         "obs-swfit"
+      ],
+      "format": [
+         "zarr"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "GERICS"
+      ],
+      "model": [
+         "NCC-NorESM1-M-GERICS-REMO2015-v1"
+      ],
+      "experiment": [
+         "rcp85"
+      ],
+      "time_frequency": [
+         "3hr"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "3hr"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2007-01-02T01:30 TO 2007-01-02T04:30]",
+      "file_name": [
+         "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.zarr"
+      ],
+      "driving_model": [
+         "NCC-NorESM1-M"
+      ],
+      "rcm_name": [
+         "GERICS-REMO2015"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.zarr",
+      "timestamp": 1676578820.0,
+      "uri": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.zarr",
+      "dataset": [
+         "cordex-swfit"
+      ],
+      "format": [
+         "zarr"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "CLMcom"
+      ],
+      "model": [
+         "MPI-M-MPI-ESM-LR-CLMcom-CCLM4-8-17-v1"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "day"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "day"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "tas"
+      ],
+      "time": "[1949-12-01T12:00 TO 1949-12-10T12:00]",
+      "file_name": [
+         "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.zarr"
+      ],
+      "driving_model": [
+         "MPI-M-MPI-ESM-LR"
+      ],
+      "rcm_name": [
+         "CLMcom-CCLM4-8-17"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.zarr",
+      "timestamp": 1676578820.0,
+      "uri": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/day/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_194912011200-194912101200.zarr",
+      "dataset": [
+         "cordex-swfit"
+      ],
+      "format": [
+         "zarr"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "reanalysis"
+      ],
+      "institute": [
+         "NOAA"
+      ],
+      "model": [
+         "NODC"
+      ],
+      "experiment": [
+         "OC5"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "ocean"
+      ],
+      "cmor_table": [
+         "Omon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "hc700"
+      ],
+      "time": "[2012-01 TO 2012-12]",
+      "file_name": [
+         "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.zarr"
+      ],
+      "file": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.zarr",
+      "timestamp": 1676578940.0,
+      "uri": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.zarr",
+      "dataset": [
+         "reana-swfit"
+      ],
+      "format": [
+         "zarr"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "CMIP6"
+      ],
+      "product": [
+         "CMIP"
+      ],
+      "institute": [
+         "CSIRO-ARCCSS"
+      ],
+      "model": [
+         "ACCESS-CM2"
+      ],
+      "experiment": [
+         "amip"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "Amon"
+      ],
+      "ensemble": [
+         "r1i1p1f1"
+      ],
+      "variable": [
+         "ua"
+      ],
+      "time": "[1979-01 TO 2014-12]",
+      "file_name": [
+         "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.zarr"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "file": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.zarr",
+      "timestamp": 1676578820.0,
+      "uri": "https://swift.dkrz.de/v1/dkrz_a32dc0e8-2299-4239-a47d-6bf45c8b0160/freva_test/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.zarr",
+      "dataset": [
+         "cmip6-swfit"
+      ],
+      "format": [
+         "zarr"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.176Z"
+   },
+   {
+      "project": [
+         "nextGEMS"
+      ],
+      "product": [
+         "nextgems_cycle2"
+      ],
+      "institute": [
+         "ECMWF-AWI"
+      ],
+      "model": [
+         "IFS-FESOM"
+      ],
+      "experiment": [
+         "HQYS"
+      ],
+      "time_frequency": [
+         "1hr"
+      ],
+      "realm": [
+         "atm"
+      ],
+      "cmor_table": [
+         "inst"
+      ],
+      "variable": [
+         "cdww",
+         "dwi",
+         "mwd",
+         "mwp",
+         "pp1d",
+         "swh",
+         "wind"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "uri": "data/random/test.json",
+      "time": "[2020-01-20T00:00 TO 2021-01-01T00:00]",
+      "file_name": [
+         "data/random/test.json"
+      ],
+      "format": [
+         "json"
+      ],
+      "grid_id": [
+         "tco2559"
+      ],
+      "file": "$CWD/data/random/test.json",
+      "timestamp": 1683287550.0,
+      "dataset": [
+         "nextGems"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T23:00 TO 2016-09-02T23:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022300-201609022330.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T22:00 TO 2016-09-02T22:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022200-201609022230.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T21:00 TO 2016-09-02T21:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022100-201609022130.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T20:00 TO 2016-09-02T20:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609022000-201609022030.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T19:00 TO 2016-09-02T19:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021900-201609021930.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T18:00 TO 2016-09-02T18:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021800-201609021830.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T17:00 TO 2016-09-02T17:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021700-201609021730.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T16:00 TO 2016-09-02T16:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021600-201609021630.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T15:00 TO 2016-09-02T15:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021500-201609021530.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T14:00 TO 2016-09-02T14:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021400-201609021430.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T13:00 TO 2016-09-02T13:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021300-201609021330.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T12:00 TO 2016-09-02T12:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021200-201609021230.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T11:00 TO 2016-09-02T11:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021100-201609021130.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T10:00 TO 2016-09-02T10:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609021000-201609021030.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T09:00 TO 2016-09-02T09:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020900-201609020930.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T08:00 TO 2016-09-02T08:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020800-201609020830.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T07:00 TO 2016-09-02T07:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020700-201609020730.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T06:00 TO 2016-09-02T06:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020600-201609020630.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T05:00 TO 2016-09-02T05:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020500-201609020530.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T04:00 TO 2016-09-02T04:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020400-201609020430.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T03:00 TO 2016-09-02T03:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020300-201609020330.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.273Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T02:00 TO 2016-09-02T02:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020200-201609020230.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T01:00 TO 2016-09-02T01:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020100-201609020130.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "grid"
+      ],
+      "institute": [
+         "CPC"
+      ],
+      "model": [
+         "CPC-cmorph"
+      ],
+      "experiment": [
+         "cmorph"
+      ],
+      "time_frequency": [
+         "1min"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "30min"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2016-09-02T00:00 TO 2016-09-02T00:30]",
+      "file_name": [
+         "data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc"
+      ],
+      "file": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/observations/grid/CPC/CPC/cmorph/30min/atmos/30min/r1i1p1/v20210618/pr/pr_30min_CPC_cmorph_r1i1p1_201609020000-201609020030.nc",
+      "dataset": [
+         "obs-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "GERICS"
+      ],
+      "model": [
+         "NCC-NorESM1-M-GERICS-REMO2015-v1"
+      ],
+      "experiment": [
+         "rcp85"
+      ],
+      "time_frequency": [
+         "3hr"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "3hr"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2007-01-02T01:30 TO 2007-01-02T04:30]",
+      "file_name": [
+         "data/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc"
+      ],
+      "driving_model": [
+         "NCC-NorESM1-M"
+      ],
+      "rcm_name": [
+         "GERICS-REMO2015"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "$CWD/data/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/model/regional/cordex/output/EUR-11/GERICS/NCC-NorESM1-M/rcp85/r1i1p1/GERICS-REMO2015/v1/3hr/pr/v20181212/pr_EUR-11_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v2_3hr_200701020130-200701020430.nc",
+      "dataset": [
+         "cordex-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.564Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "CLMcom"
+      ],
+      "model": [
+         "MPI-M-MPI-ESM-LR-CLMcom-CCLM4-8-17-v1"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "day"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "day"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "tas"
+      ],
+      "time": "[1949-12-01T12:00 TO 1949-12-10T12:00]",
+      "file_name": [
+         "data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/daypt/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_daypt_194912011200-194912101200.nc"
+      ],
+      "driving_model": [
+         "MPI-M-MPI-ESM-LR"
+      ],
+      "rcm_name": [
+         "CLMcom-CCLM4-8-17"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "$CWD/data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/daypt/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_daypt_194912011200-194912101200.nc",
+      "timestamp": 1676475260.0,
+      "uri": "$CWD/data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r1i1p1/CLMcom-CCLM4-8-17/v1/daypt/tas/v20140515/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_daypt_194912011200-194912101200.nc",
+      "dataset": [
+         "cordex-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.731Z"
+   },
+   {
+      "project": [
+         "cordex"
+      ],
+      "product": [
+         "EUR-11"
+      ],
+      "institute": [
+         "CLMcom"
+      ],
+      "model": [
+         "MPI-M-MPI-ESM-LR-CLMcom-CCLM4-8-17-v1"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "fx"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "fx"
+      ],
+      "ensemble": [
+         "r0i0p0"
+      ],
+      "variable": [
+         "orog"
+      ],
+      "time": "[0 TO 9999]",
+      "file_name": [
+         "data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r0i0p0/CLMcom-CCLM4-8-17/v1/fx/orog/v20140515/orog_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_fx.nc"
+      ],
+      "driving_model": [
+         "MPI-M-MPI-ESM-LR"
+      ],
+      "rcm_name": [
+         "CLMcom-CCLM4-8-17"
+      ],
+      "rcm_version": [
+         "v1"
+      ],
+      "file": "$CWD/data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r0i0p0/CLMcom-CCLM4-8-17/v1/fx/orog/v20140515/orog_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_fx.nc",
+      "timestamp": 1683727230.0,
+      "uri": "$CWD/data/model/regional/cordex/output/EUR-11/CLMcom/MPI-M-MPI-ESM-LR/historical/r0i0p0/CLMcom-CCLM4-8-17/v1/fx/orog/v20140515/orog_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_fx.nc",
+      "dataset": [
+         "cordex-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.733Z"
+   },
+   {
+      "project": [
+         "observations"
+      ],
+      "product": [
+         "reanalysis"
+      ],
+      "institute": [
+         "NOAA"
+      ],
+      "model": [
+         "NODC"
+      ],
+      "experiment": [
+         "OC5"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "ocean"
+      ],
+      "cmor_table": [
+         "Omon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "hc700"
+      ],
+      "time": "[2012-01 TO 2012-12]",
+      "file_name": [
+         "data/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc"
+      ],
+      "file": "$CWD/data/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc",
+      "timestamp": 1675350270.0,
+      "uri": "$CWD/data/model/obs/reanalysis/reanalysis/NOAA/NODC/OC5/mon/ocean/Omon/r1i1p1/v20200101/hc700/hc700_mon_NODC_OC5_r1i1p1_201201-201212.nc",
+      "dataset": [
+         "reana-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "CMIP6"
+      ],
+      "product": [
+         "CMIP"
+      ],
+      "institute": [
+         "MPI-M"
+      ],
+      "model": [
+         "MPI-ESM1-2-LR"
+      ],
+      "experiment": [
+         "amip"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "Amon"
+      ],
+      "ensemble": [
+         "r2i1p1f1"
+      ],
+      "variable": [
+         "ua"
+      ],
+      "time": "[1979-01 TO 1998-12]",
+      "file_name": [
+         "data/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_gn_197901-199812.nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "file": "$CWD/data/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_gn_197901-199812.nc",
+      "timestamp": 1680761980.0,
+      "uri": "$CWD/data/model/global/cmip6/CMIP6/CMIP/MPI-M/MPI-ESM1-2-LR/amip/r2i1p1f1/Amon/ua/gn/v20190815/ua_mon_MPI-ESM1-2-LR_amip_r2i1p1f1_gn_197901-199812.nc",
+      "dataset": [
+         "cmip6-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "CMIP6"
+      ],
+      "product": [
+         "CMIP"
+      ],
+      "institute": [
+         "CSIRO-ARCCSS"
+      ],
+      "model": [
+         "ACCESS-CM2"
+      ],
+      "experiment": [
+         "amip"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "Amon"
+      ],
+      "ensemble": [
+         "r1i1p1f1"
+      ],
+      "variable": [
+         "ua"
+      ],
+      "time": "[1979-01 TO 2014-12]",
+      "file_name": [
+         "data/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "file": "$CWD/data/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc",
+      "timestamp": 1676558080.0,
+      "uri": "$CWD/data/model/global/cmip6/CMIP6/CMIP/CSIRO-ARCCSS/ACCESS-CM2/amip/r1i1p1f1/Amon/ua/gn/v20201108/ua_Amon_ACCESS-CM2_amip_r1i1p1f1_gn_197901-201412.nc",
+      "dataset": [
+         "cmip6-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.320Z"
+   },
+   {
+      "project": [
+         "mock"
+      ],
+      "product": [
+         "BARR"
+      ],
+      "institute": [
+         "CSIRO-ARCCSS"
+      ],
+      "model": [
+         "ACCESS-CM2"
+      ],
+      "experiment": [
+         "amip"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "Amon"
+      ],
+      "ensemble": [
+         "r1i1p1f1"
+      ],
+      "variable": [
+         "ua"
+      ],
+      "time": "[1979-01 TO 2014-12]",
+      "file_name": [
+         "/foo/bar.nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "file": "/foo/bar.nc",
+      "timestamp": 1675350270.0,
+      "uri": "/foo/bar.nc",
+      "dataset": [
+         "foo-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.312Z"
+   }
+]

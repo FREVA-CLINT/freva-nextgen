@@ -1,22 +1,35 @@
 """Freva the Free Evaluation System command line interface."""
 
-import typer
-from freva_client import __version__
-from freva_client.utils import logger
-from rich import print as pprint
+from typing import Optional
 
-APP_NAME: str = "freva-client"
+import typer
+from freva_client.utils import logger
+
+from .auth_cli import authenticate_cli
+from .cli_utils import APP_NAME, version_callback
+from .databrowser_cli import databrowser_app
 
 app = typer.Typer(
     name=APP_NAME,
     help=__doc__,
-    add_completion=False,
+    add_completion=True,
     callback=logger.set_cli,
 )
 
 
-def version_callback(version: bool) -> None:
-    """Print the version and exit."""
-    if version:
-        pprint(f"{APP_NAME}: {__version__}")
-        raise typer.Exit()
+@app.callback()
+def main(
+    version: Optional[bool] = typer.Option(
+        None,
+        "--version",
+        "-V",
+        help="Show version and exit",
+        callback=version_callback,
+        is_eager=True,
+    ),
+) -> None:
+    """The main cli app."""
+
+
+app.add_typer(databrowser_app, name="databrowser")
+app.command(name="auth", help=authenticate_cli.__doc__)(authenticate_cli)

@@ -123,8 +123,8 @@ Table of Content
 .. toctree::
    :maxdepth: 1
 
+   auth/index
    databrowser/index
-
 
 Feedback and Support
 ====================

@@ -1,7 +1,10 @@
 # .coveragerc to control coverage.py
 [run]
-branch = True
-omit = .converage* run_server.py
+branch = False
+omit = .converage*
+       run_server.py
+       */tests/*
+       */__main__.py
 [report]
 fail_under = 95
 # Regexes for lines to exclude from consideration

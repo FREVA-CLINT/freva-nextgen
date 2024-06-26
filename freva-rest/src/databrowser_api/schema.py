@@ -11,10 +11,16 @@ from .core import FlavourType
 Required: Any = Ellipsis
 
 
+class LoadFiles(BaseModel):
+    """Schema for the load file endpoint response."""
+
+    urls: List[str]
+
+
 class SolrSchema:
     """Class holding all apache solr config parameters."""
 
-    params: dict[str, Any] = {
+    params: Dict[str, Any] = {
         "batch_size": Query(
             alias="max-results",
             title="Max. results",
@@ -57,12 +63,14 @@ class SolrSchema:
     }
 
     @classmethod
-    def process_parameters(cls, request: Request) -> dict[str, list[str]]:
+    def process_parameters(
+        cls, request: Request, *parameters_not_to_process: str
+    ) -> Dict[str, list[str]]:
         """Convert Starlette Request QueryParams to a dictionary."""
 
         query = parse_qs(str(request.query_params))
-        for key in ("uniq_key", "flavour"):
-            _ = query.pop("key", [""])
+        for key in ("uniq_key", "flavour") + parameters_not_to_process:
+            _ = query.pop(key, [""])
         for key, param in cls.params.items():
             _ = query.pop(key, [""])
             _ = query.pop(param.alias, [""])

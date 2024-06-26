@@ -14,7 +14,8 @@ library described in the documentation only support searching for data. If you
 need to apply data analysis plugins, please visit the
 """
 
+from .auth import authenticate
 from .query import databrowser
 
 __version__ = "2404.0.1"
-__all__ = ["databrowser", "__version__"]
+__all__ = ["authenticate", "databrowser", "__version__"]

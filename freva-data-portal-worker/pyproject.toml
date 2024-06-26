@@ -1,0 +1,55 @@
+[build-system]
+requires = ["flit_core >=3.2", "appdirs"]
+build-backend = "flit_core.buildapi"
+[project]
+name = "data-portal-worker"
+dynamic = ["version"]
+description = "Backend library that opens different climate datasets."
+authors = [{name = "DKRZ, Clint", email = "freva@dkrz.de"}]
+readme = "README.md"
+classifiers = [
+               "Development Status :: 3 - Alpha",
+               "Environment :: Console",
+               "Intended Audience :: Developers",
+               "Intended Audience :: Science/Research",
+               "License :: OSI Approved :: BSD License",
+               "Operating System :: POSIX :: Linux",
+               "Programming Language :: Python :: 3",
+               "Programming Language :: Python :: 3.9",
+               "Programming Language :: Python :: 3.10",
+               "Programming Language :: Python :: 3.11",
+               "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.9"
+dependencies = [
+"appdirs",
+"asyncssh",
+"bokeh",
+"cfgrib",
+"cloudpickle",
+"dask[distributed,diagnostics]",
+"h5netcdf",
+"jupyter-server-proxy",
+"netcdf4",
+"rasterio",
+"redis",
+"requests",
+"rioxarray",
+"typer",
+"xarray",
+"xpublish",
+"zarr",
+]
+[project.scripts]
+data-loader-worker = "data_loader_worker:cli.run_data_loader"
+[project.urls]
+Documentation = "https://freva-clint.github.io/freva-nextgen"
+Issues = "https://github.com/FREVA-CLINT/freva-nextgen/issues"
+Source = "https://github.com/FREVA-CLINT/freva-nextgen/"
+
+[project.optional-dependencies]
+dev = ["tox"]
+
+
+[package-data]
+freva_deployment = ["py.typed"]
