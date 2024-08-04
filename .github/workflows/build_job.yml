@@ -32,7 +32,7 @@ jobs:
           python3 run_server.py --gen-certs
       - name: Set up services
         run: |
-          docker-compose -f dev-env/docker-compose.yaml up -d --remove-orphans
+          docker compose -f dev-env/docker-compose.yaml up -d --remove-orphans
       - name: Waiting for keycloak
         run: |
           python run_server.py -w
