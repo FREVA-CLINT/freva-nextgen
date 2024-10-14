@@ -1,5 +1,5 @@
 aiohttp==3.10.6
-fastapi==0.111.1
+fastapi==0.115.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 requests==2.32.3
