@@ -41,7 +41,22 @@ environment variables are evaluated:
 - ``API_OIDC_URL``: Discovery of the open connect id service.
 - ``API_OIDC_CLIENT_ID``: Name of the client (app) that is used to create
                           the access tokens, defaults to freva
-- ``API_OIDC_CLIENT_SECRET``: You can set a client secret, if you have
+- ``API_OIDC_CLIENT_SECRET``: You can set a client secret, if you have.
+- ``API_OIDC_DISCOVERY_URL``: OpenID connect discovery url.
+- ``API_TOOL_HOST``: The host from where to schedule tool jobs.
+- ``API_TOOL_ADMIN_USER``: Admin user name connecting to the tool `host`.
+- ``API_TOOL_ADMIN_PASSWORD``: Password for connecting to the tool `host`.
+- ``API_TOOL_SSH_CERT``: Directory where the ssh certificates are stored.
+- ``API_TOOL_CONDA_ENV_PATH``: Directory to store the tools and thier conda envs.
+- ``API_TOOL_OUTPUT_PATH``: Path where the output of the tool should be stored.
+- ``API_TOOL_PYTHON_PATH``: The remote python path on the scheduler host.
+- ``API_TOOL_WLM_SYSTEM``: Workload manger system.
+- ``API_TOOL_WLM_MEMORY``: How much memory should be allocated.
+- ``API_TOOL_WLM_QUEUE``: Which queue the job is running on.
+- ``API_TOOL_WLM_PROJECT``: The project name that is charge for the calculation.
+- ``API_TOOL_WLM_WALLTIME``: Max computing time used for the calculation
+- ``API_TOOL_WLM_CPUS``: Numbers of CPUs per job.
+- ``API_TOOL_WLM_EXTRA_OPTIONS``: Extra scheduler options that are passed.
 - ``API_SERVICES``:  The services the api should serve.
 
 📝  You can override the path to the default config file using the
@@ -53,6 +68,7 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 from enum import Enum
 from pathlib import Path
 from socket import gethostname
@@ -72,6 +88,8 @@ def create_arg_parser(
     fields: Dict[str, FieldInfo], forbidden: List[str]
 ) -> argparse.ArgumentParser:
     """Create the cli parser."""
+    literal_pattern = r"Literal\[(.*?)\]"
+    list_pattern = r"List\[(.*?)\]"
     parser = argparse.ArgumentParser(
         prog="freva-rest-server",
         description=Markdown(__doc__),  # type: ignore
@@ -86,6 +104,10 @@ def create_arg_parser(
     )
     for key, field in fields.items():
         name = key.replace("_", "-")
+        if name in forbidden:
+            continue
+        literal_match = re.search(literal_pattern, str(field.annotation))
+        list_match = re.search(list_pattern, str(field.annotation))
         if field.annotation in (
             bool,
             Union[str, int, bool],
@@ -97,7 +119,25 @@ def create_arg_parser(
                 action="store_true",
                 default=False,
             )
-
+        elif list_match and name not in forbidden:
+            parser.add_argument(
+                f"--{name}",
+                help=field.description,
+                default=field.default or None,
+                type=str,
+                nargs="*",
+            )
+        elif literal_match and name not in forbidden:
+            choices = tuple(
+                arg.strip(" '\"") for arg in literal_match.group(1).split(",")
+            )
+            parser.add_argument(
+                f"--{name}",
+                help=field.description,
+                default=field.default or None,
+                type=type(field.default),
+                choices=choices,
+            )
         elif name not in forbidden:
             parser.add_argument(
                 f"--{name}",
@@ -134,9 +174,14 @@ def get_cert_file(
 def cli(argv: Optional[List[str]] = None) -> None:
     """Start the freva rest API."""
     cfg = ServerConfig()
-    parser = create_arg_parser(cfg.__fields__, ["api-services"])
+    parser = create_arg_parser(cfg.model_fields, ["api-services"])
     parser.add_argument(
         "--dev", action="store_true", help="Enable development mode"
+    )
+    parser.add_argument(
+        "--no-ssh",
+        action="store_true",
+        help="When running in dev_mode, turn off ssh connections.",
     )
     parser.add_argument(
         "--n-workers",
@@ -159,7 +204,12 @@ def cli(argv: Optional[List[str]] = None) -> None:
         "-s",
         help="The services the API should serve",
         nargs="+",
-        default=os.getenv("API_SERVICES", "").split(","),
+        default=[
+            s.strip()
+            for s in os.getenv("API_SERVICES", "").split(",")
+            if s.strip()
+        ]
+        or None,
         choices=["databrowser", "zarr-stream"],
     )
 
@@ -172,6 +222,8 @@ def cli(argv: Optional[List[str]] = None) -> None:
     defaults: Dict[str, str] = {
         "API_CONFIG": str(Path(args.config).expanduser().absolute()),
         "DEBUG": str(int(args.debug)),
+        "DEV_MODE": str(int(args.dev)),
+        "API_NO_SSH": str(int(args.dev and args.no_ssh)),
         "API_SERVICES": ",".join(args.services or "").replace("_", "-"),
         "API_REDIS_SSL_KEYFILE": str(ssl_key or ""),
         "API_REDIS_SSL_CERTFILE": str(ssl_cert or ""),
@@ -180,8 +232,11 @@ def cli(argv: Optional[List[str]] = None) -> None:
     cfg = ServerConfig(config=args.config, debug=args.debug)
     for key, value in args._get_kwargs():
         name = key.upper().removeprefix("API_")
+        default = value or ""
+        if isinstance(default, list):
+            default = ",".join(default)
         if key in cfg.model_fields_set and key not in ["debug"]:
-            defaults.setdefault(f"API_{name}", str(value or ""))
+            defaults.setdefault(f"API_{name}", default)
     if args.dev:
         from freva_rest.databrowser_api.mock import read_data
 
@@ -201,6 +256,7 @@ def cli(argv: Optional[List[str]] = None) -> None:
             log_level=cfg.log_level,
             workers=workers[args.dev],
             env_file=temp_f.name,
+            loop="uvloop",
         )
 
 

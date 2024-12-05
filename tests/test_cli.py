@@ -121,6 +121,7 @@ def test_rest_cli(mocker: MockerFixture) -> None:
                 reload=True,
                 log_level=20,
                 workers=None,
+                loop="uvloop",
                 env_file=str(Path(temp_dir) / "foo.txt"),
             )
             cli(["--debug"])
@@ -131,6 +132,7 @@ def test_rest_cli(mocker: MockerFixture) -> None:
                 reload=False,
                 log_level=10,
                 workers=8,
+                loop="uvloop",
                 env_file=str(Path(temp_dir) / "foo.txt"),
             )
 

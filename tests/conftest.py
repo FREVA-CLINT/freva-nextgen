@@ -1,15 +1,17 @@
 """Pytest configuration settings."""
 
 import asyncio
+import inspect
 import json
 import os
+import shutil
 import socket
 import threading
 import time
 from base64 import b64encode
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Dict, Iterator
+from typing import Any, AsyncIterator, Dict, Iterator, Tuple
 
 import mock
 import pytest
@@ -26,6 +28,47 @@ from freva_rest.databrowser_api.mock import read_data
 from freva_rest.utils import create_redis_connection
 
 
+async def Run(*cmd: str, stdout: Any = None, **kwargs: Any) -> Any:
+    """Mock the execution of a sub command."""
+
+    class Writer:
+        """Mock the return value of asyncio.create_subprocess_exec."""
+
+        def __init__(self, returncode: int):
+            self.stderr = None
+            self.returncode = returncode
+
+        @property
+        async def stdout(self) -> AsyncIterator[bytes]:
+            for out in ("foo", "bar"):
+                yield out.encode("utf-8")
+                yield "\n".encode("utf-8")
+
+        async def wait(self) -> None:
+            """This should have a wait method."""
+            await asyncio.sleep(0.5)
+
+        async def communicate(self) -> Tuple[bytes, bytes]:
+            """Mock the communicate method."""
+            return self.stdout, self.stderr
+
+    return_code = int(os.getenv("MOCK_RETURN_CODE", "0"))
+    if cmd[0] == "rm":
+        shutil.rmtree(cmd[-1])
+        if return_code != 0:
+            raise RuntimeError("Mock command failed.")
+    elif cmd[0] == "git":
+        # We should execute this command.
+        os.system(" ".join(cmd))
+    if hasattr(stdout, "write") and inspect.iscoroutinefunction(stdout.write):
+        await stdout.write(f"Running {' '.join(cmd)}\n")
+        await asyncio.sleep(2)
+    elif hasattr(stdout, "write"):
+        stdout.write(f"Running {' '.join(cmd)}\n".encode("utf-8"))
+
+    return Writer(return_code)
+
+
 def run_test_server(port: int) -> None:
     """Start a test server using uvcorn."""
     logger.setLevel(10)
@@ -35,7 +78,12 @@ def run_test_server(port: int) -> None:
             f"http://localhost:{port}",
         ):
             uvicorn.run(
-                app, host="0.0.0.0", port=port, reload=False, workers=None
+                app,
+                host="0.0.0.0",
+                port=port,
+                reload=False,
+                workers=None,
+                loop="uvloop",
             )
 
 
@@ -54,12 +102,8 @@ def get_data_loader_config() -> bytes:
                 "user": os.getenv("API_REDIS_USER"),
                 "passwd": os.getenv("API_REDIS_PASSWORD"),
                 "host": os.getenv("API_REDIS_HOST"),
-                "ssl_cert": Path(
-                    os.getenv("API_REDIS_SSL_CERTFILE")
-                ).read_text(),
-                "ssl_key": Path(
-                    os.getenv("API_REDIS_SSL_KEYFILE")
-                ).read_text(),
+                "ssl_cert": Path(os.getenv("API_REDIS_SSL_CERTFILE")).read_text(),
+                "ssl_key": Path(os.getenv("API_REDIS_SSL_KEYFILE")).read_text(),
             }
         ).encode("utf-8")
     )
@@ -113,6 +157,15 @@ def setup_server() -> Iterator[str]:
     thread2.start()
     time.sleep(5)
     yield f"http://localhost:{port}/api/freva-nextgen"
+
+
+async def drop_mongo_collections() -> None:
+    """Wipe the mongoDB."""
+    conf = ServerConfig()
+    db = conf.mongo_client[conf.mongo_db]
+    collections = await db.list_collection_names()
+    for col in collections:
+        await db.drop_collection(col)
 
 
 @pytest.fixture(scope="session")
@@ -197,9 +250,7 @@ def invalid_eval_conf_file() -> Iterator[Path]:
     with TemporaryDirectory() as temp_dir:
         eval_file = Path(temp_dir) / "eval.conf"
         eval_file.write_text(
-            "[foo]\n"
-            "solr.host = http://localhost\n"
-            "databrowser.port = 8080"
+            "[foo]\n" "solr.host = http://localhost\n" "databrowser.port = 8080"
         )
         with mock.patch.dict(
             os.environ,
@@ -234,9 +285,11 @@ def test_server() -> Iterator[str]:
         env[key] = os.getenv(f"API_{key}", "")
     env["REDIS_PASS"] = os.getenv("API_REDIS_PASSWORD")
     with mock.patch.dict(os.environ, env, clear=True):
+        asyncio.run(drop_mongo_collections())
         yield from setup_server()
         asyncio.run(shutdown_data_loader())
         asyncio.run(flush_cache())
+        asyncio.run(drop_mongo_collections())
 
 
 @pytest.fixture(scope="module")
@@ -387,3 +440,32 @@ def user_data_payload_sample_partially_success() -> Dict[str, list[str]]:
         ],
         "facets": {"project": "cmip5", "experiment": "myFavExp"},
     }
+
+
+@pytest.fixture(scope="module")
+def subporcess_mocker(
+    test_server: str,
+) -> Iterator[Tuple[str, Dict[str, Dict[str, str]]]]:
+    """Patch the subporcess run process for adding tools."""
+    env = os.environ.copy()
+    env["QUEUE_MAX_SIZE"] = "1"
+    with mock.patch(
+        "freva_rest.tool_api.utils.asyncio.create_subprocess_exec", Run
+    ):
+        tokens: Dict[str, Dict[str, str]] = {}
+        for username in ("janedoe", "johndoe", "alicebrown"):
+            res = requests.post(
+                f"{test_server}/auth/v2/token",
+                data={
+                    "username": username,
+                    "password": f"{username}123",
+                    "grant_type": "password",
+                },
+                timeout=5,
+            )
+            token = res.json()
+            tokens[username] = {
+                "Authorization": f'{token["token_type"]} {token["access_token"]}'
+            }
+        with mock.patch.dict(os.environ, env, clear=True):
+            yield test_server, tokens

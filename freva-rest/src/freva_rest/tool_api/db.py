@@ -1,11 +1,16 @@
 """Definitions of Tool parameters and types."""
 
+import enum
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.functional_validators import field_validator
+from fastapi import HTTPException, status
+from packaging.version import InvalidVersion, Version
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.functional_validators import field_validator, model_validator
+
+from freva_rest.config import ServerConfig
 
 BaseParamType = Union[
     str,
@@ -14,8 +19,34 @@ BaseParamType = Union[
     bool,
     datetime,
     Path,
-    List[Union[str, int, float, bool, datetime, Path]],
+    List[str],
+    List[int],
+    List[float],
+    List[bool],
+    List[datetime],
+    List[Path],
 ]
+
+
+@enum.unique
+class ToolState(enum.IntEnum):
+    """Define the states a tool could be in."""
+
+    UNKOWN = -1  # The tool seems to be lost.
+    SUBMITTED = 0
+    IN_PROGRESS = 1
+    FINISHED = 2
+    CANCEL = 3  # The tool should will be cancled
+    CANCELED = 4
+    FAILED = 5
+
+    @classmethod
+    def get_status_from_value(cls, value: int) -> "ToolState":
+        """Get the status name from status value."""
+        for state in cls:
+            if value == state.value:
+                return state
+        raise ValueError(f"Unknown ToolState value: {value}")
 
 
 class BaseParam(BaseModel):
@@ -73,10 +104,12 @@ class BaseParam(BaseModel):
     name: Annotated[
         str, Field(min_length=1, description="Name of the parameter.")
     ]
-    title: Annotated[
-        Optional[str], Field(description="Title of parameter.")
-    ] = None
-    help: str = Field(description="Description of parameter's function.")
+    title: Annotated[Optional[str], Field(description="Title of parameter.")] = (
+        None
+    )
+    help: Annotated[
+        str, Field(description="Description of parameter's function.")
+    ] = ""
     mandatory: Annotated[
         bool,
         Field(
@@ -90,12 +123,12 @@ class BaseParam(BaseModel):
         Field(mandatory=False, description="Default value of parameter."),
     ] = None
 
-    @field_validator("title", mode="after")
-    def set_default_title(cls, title: Optional[str]) -> str:
+    @model_validator(mode="after")
+    def validate_intput(self) -> "BaseParam":
         """Assign the title."""
-        if title is None:
-            title = cls.name
-        return title
+        if self.title is None:
+            self.title = self.name
+        return self
 
 
 class Bool(BaseParam):
@@ -118,7 +151,7 @@ class Bool(BaseParam):
     """
 
     type: Literal["bool"]
-    default: Optional[bool] = None
+    default: Optional[Union[bool, List[bool]]] = None
 
 
 class Integer(BaseParam):
@@ -142,7 +175,7 @@ class Integer(BaseParam):
     """
 
     type: Literal["integer"]
-    default: Optional[int] = None
+    default: Optional[Union[int, List[int]]] = None
 
 
 class Float(BaseParam):
@@ -165,7 +198,7 @@ class Float(BaseParam):
     """
 
     type: Literal["float"]
-    default: Optional[float] = None
+    default: Optional[Union[float, List[float]]] = None
 
 
 class String(BaseParam):
@@ -188,7 +221,7 @@ class String(BaseParam):
     """
 
     type: Literal["string"]
-    default: Optional[str] = None
+    default: Optional[Union[str, List[str]]] = None
 
 
 class Date(BaseParam):
@@ -211,7 +244,7 @@ class Date(BaseParam):
     """
 
     type: Literal["datetime"]
-    default: Optional[datetime] = None
+    default: Optional[Union[datetime, List[datetime]]] = None
 
 
 class DataField(BaseParam):
@@ -220,7 +253,7 @@ class DataField(BaseParam):
 
     Parameters
     ----------
-    facet (str):
+    search_key (str):
         The databrowser facet used for this parameter.
     group (int, optional):
         The group this search facet belongs to. This can be used to group
@@ -229,7 +262,7 @@ class DataField(BaseParam):
     multiple(bool, optional):
         Flag indicating whether multiple values can be selected for the
         selected facet. Default is False.
-    predefined_facets(Dict[str, Union[str, Sequence[str]]], optional):
+    constraints(Dict[str, Union[str, Sequence[str]]], optional):
         A dict containing default values for other search facets.
         Defaults to None.
     default (str, optional):
@@ -239,7 +272,7 @@ class DataField(BaseParam):
 
     Attributes
     ----------
-    facet (str):
+    search_key (str):
         The databrowser facet used for this parameter.
     group (int, optional):
         The group this search facet belongs to. This can be used to group
@@ -248,7 +281,7 @@ class DataField(BaseParam):
     multiple(bool, optional):
         Flag indicating whether multiple values can be selected for the
         selected facet.
-    predefined_facets(Dict[str, Union[str, List[str]]], optional):
+    constraints(Dict[str, Union[str, List[str]]], optional):
         A dict containing default values for other search facets.
     default (str, optional):
         The default value of the parameter.
@@ -274,11 +307,12 @@ class DataField(BaseParam):
     """
 
     type: Literal["databrowser"]
-    facet: str = Field()
-    group: int = 1
-    multiple: bool = False
-    predefined_facets: Optional[Dict[str, Union[str, List[str]]]] = None
-    default: Optional[str] = None
+    default: Optional[Union[str, List[str]]] = None
+    search_key: Annotated[Optional[str], Field()] = None
+    constraint: Annotated[Optional[Dict[str, Union[str, List[str]]]], Field()] = (
+        None
+    )
+    search_result: Annotated[Optional[str], Field()] = None
 
 
 class Range(BaseParam):
@@ -324,12 +358,7 @@ class File(BaseParam):
     """
 
     type: Literal["path"]
-    default: Optional[Path] = None
-
-    @field_validator("default")
-    @classmethod
-    def assert_is_file(cls, path: Union[str, Path]) -> Path:
-        return Path(path)
+    default: Optional[Union[Path, str, List[Path], List[str]]] = None
 
 
 ParameterType = Annotated[
@@ -338,19 +367,33 @@ ParameterType = Annotated[
 ]
 
 
-class ToolAbstract(BaseModel):
+class ToolConfig(BaseModel):
     """Define the database model for the tool configuration."""
 
     # basic tool metadata
-    name: Annotated[str, Field(description="Name of the tool")]
-    author: Annotated[str, Field(description="Tool Author(s)")]
+    name: Annotated[str, Field(description="Name of the tool", min_length=1)]
+    authors: Annotated[
+        List[str], Field(description="Tool Author(s)", min_length=1)
+    ]
     version: Annotated[str, Field(description="Tool version")]
     summary: Annotated[
         str,
         Field(
+            min_length=1,
             description="Short description of what the tool is supposed to do.",
         ),
     ]
+    command: Annotated[
+        str, Field(min_length=1, description="The command that is executed.")
+    ]
+    username: Annotated[
+        str, Field(min_length=1, description="The user who add's the tool.")
+    ]
+    conda_env: Annotated[
+        Optional[str],
+        Field(description="Binary used to execute tool command."),
+    ] = None
+    added: Annotated[datetime, Field(description="When the tool was added.")]
     description: Annotated[
         Optional[str],
         Field(
@@ -361,35 +404,64 @@ class ToolAbstract(BaseModel):
         Optional[str],
         Field(description="An optional title of the tool."),
     ] = None
-    added: Annotated[datetime, Field(description="When the tool was added.")]
+    visible: Annotated[
+        bool, Field(description="If this particular version is to be displayed.")
+    ] = True
     # input parameters
     parameters: Annotated[
         Optional[List[ParameterType]],
         Field(description="The input parameters of the tool."),
     ] = None
     # tool command and binary used to execute tool
-    command: Annotated[str, Field(description="The command that is executed.")]
-    binary: Annotated[
-        str,
-        Field(description="Binary used to execute tool command."),
-    ]
-    # output parameters
-    output_type: Annotated[
-        Literal["plots", "data", "both"],
-        Field(
-            description="Type of output. Can be either 'plots', 'data' or 'both'",
-        ),
-    ]
 
-    @model_validator(mode="before")
-    def _validate_config(cls, config: str) -> dict[str, Any]:
+    @field_validator("version")
+    @classmethod
+    def validate_version(cls, value: str) -> str:
         """
-        Run a number of tests on the given config, for example that it contains
-        certain keys for the different categories of the config (such as
-        tool_metadata, input_parameters, runtime_parameters, output_parameters)
-        raises an error if checks fail. The idea is that it gets a TOML file
-        string as input, parses it as a dictionary, checks this dictionary
-        and returns one that is 'flattened', i.e. where table ids from the
-        TOML file no longer appear.
+        Validate that the version string conforms to PEP 440.
         """
-        raise NotImplementedError
+        try:
+            return str(Version(value))  # Validate the version
+        except InvalidVersion:
+            raise ValueError(
+                f"Invalid version: '{value}'. "
+                "Ensure it conforms to PEP 440 (e.g., 1.0.0, 1.0.0b1)."
+            ) from None
+
+    async def dump_to_db(self) -> None:
+        """Add this specific tool to the tools db."""
+        cfg = ServerConfig()
+        collection = cfg.mongo_client[cfg.mongo_db]["tool_definitions"]
+        await collection.create_index(
+            [("name", 1), ("version", 1), ("username", 1)], unique=True
+        )
+        await collection.replace_one(
+            {
+                "name": self.name,
+                "version": self.version,
+                "username": self.username,
+                "visible": self.visible,
+            },
+            self.dict(by_alias=True),
+            upsert=True,
+        )
+
+    async def check_for_version(self) -> None:
+        """Check if a tool of the given version already exists in the DB."""
+        cfg = ServerConfig()
+        collection = cfg.mongo_client[cfg.mongo_db]["tool_definitions"]
+        query = {
+            "$and": [
+                {"name": self.name},
+                {"version": self.version},
+                {"$or": [{"username": self.username}, {"username": "admin"}]},
+            ]
+        }
+        if await collection.find_one(query):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Version {self.version} has already been added, "
+                    "please bump the version of your tool first."
+                ),
+            )

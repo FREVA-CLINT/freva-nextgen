@@ -25,6 +25,9 @@ services = ["databrowser", "zarr-stream"]
 proxy = ""
 
 
+# The the list of user names that are allowed to do chores
+admin_users = []
+
 [solr]
 # Solr is used for indexing and querying metadata of multi-version datasets.
 
@@ -91,6 +94,61 @@ password = ""
 # Only required if Redis is configured with SSL/TLS security.
 cert_file = ""
 key_file = ""
+
+[tool]
+# The tool API makes a connection to a HPC cluster to run user defined
+# data analysis tools
+
+# The host from where to schedule jobs.
+host = "localhost"
+
+# The admin user name that makes a connection to the `scheduler_host`
+# to submit jobs
+admin_user = ""
+
+# We strongly advice AGAINST using password based connections to the scheduler
+# host. If this password less connections are not possible you can set the
+# password of the `admin_user` here. If this needs to be done (there probaply
+# is a better way) you should make sure that this config file is safe.
+admin_password = ""
+
+# Directory to where ssh certificates are stored.
+ssh_cert = ""
+
+# Path where the tools and their conda-forge environment will be stored.
+conda_env_path = "/tmp/tools/code"
+
+# Tool output paths
+output_path = "/tmp/tools/output"
+
+# The remote python path on the scheduler host
+python_path = "/usr/bin/python3"
+
+[tool.wlm]
+# Workload settings
+# Workload manager system - currently the following workload manger systems are
+# available: local (no workload manager), lsf, moab, oar, pbs, sge, slurm
+system = "local"
+
+# How much memory should be allocated, if any
+memory = ""
+
+# Which queue the job is running on, if any
+queue = ""
+
+# The project name that is chared for the calculation, if any
+project = ""
+
+# Max computing time used for the calculation, if any
+walltime = ""
+
+# Numbers of CPUs per job, if any
+cpus = ""
+
+# Extra scheduler options that are passed, if any
+# Those extra settings have to be in the scheduler specific
+# dialect.
+extra_options = ""
 
 
 [oidc]

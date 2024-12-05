@@ -9,9 +9,16 @@ from pydantic import BaseModel, Field
 ParameterItems = Union[str, float, int, datetime, bool, None]
 
 
-class DisableVisibilityPaylaod(BaseModel):
+class ToolChangePayload(BaseModel):
     """Define the payload for disabling the visibility of a tool."""
 
+    tool: Annotated[
+        str,
+        Field(
+            title="Tool",
+            description="The name of the tool that needs to be changed.",
+        ),
+    ]
     versions: Annotated[
         Optional[List[str]],
         Field(
@@ -24,21 +31,23 @@ class DisableVisibilityPaylaod(BaseModel):
             examples=[["v0.0.1", "v0.0.2"]],
         ),
     ] = None
-
-
-class EnableVisibilityPayload(DisableVisibilityPaylaod):
-    """This class changes the visibility of the a tool."""
-
-    users: Annotated[
-        Optional[List[str]],
+    visible: Annotated[
+        Optional[bool],
         Field(
-            title="Users",
             description=(
-                "List of username that are affected by the change "
-                "of visibility. By default this tool will be available to all "
-                "users."
+                "If this flag is set to true/false the tool will be made"
+                "visible / invisible. You can use this flag to disable tools."
+            )
+        ),
+    ] = None
+    make_global: Annotated[
+        Optional[bool],
+        Field(
+            alias="make-global",
+            description=(
+                "If this flag is set to true you will make this,"
+                "tool visible to anyone - ⚠️ You cannot undo this operation."
             ),
-            examples=[["a1234", "b1234"]],
         ),
     ] = None
 
@@ -46,14 +55,22 @@ class EnableVisibilityPayload(DisableVisibilityPaylaod):
 class ToolAddPayload(BaseModel):
     """Define how a tool is added to the system.
 
-    There are three fundamental options:
-
-        - Directly passing a toml string that holds he tool configuration.
-        - Passing a git url where the tool configuration is stored.
-        - Using a pre-defined tool from the central tool repository.
-
+    Your tool needs to be stored on a *public* git repository.
+    If you want to deploy a development version you can check out any branch
+    other than *main*, which is the default branch.
     """
 
+    tool_name: Annotated[
+        Optional[str],
+        Field(
+            title="Tool name",
+            description=(
+                "If you want to add a tool from the community tool definitions"
+                " you can simply give the name of the tool."
+            ),
+            alias="tool-name",
+        ),
+    ] = None
     url: Annotated[
         Optional[str],
         Field(
@@ -63,17 +80,34 @@ class ToolAddPayload(BaseModel):
             ),
         ),
     ] = None
-    name: Annotated[
+    branch: Annotated[
         Optional[str],
         Field(
-            title="Predefined tool",
+            title="Git branch",
             description=(
-                "You can add tools from the pre-defined tool "
-                "repository by simply providing the name of the "
-                "tool"
+                "A specific branch of the tool. This can be useful if you"
+                " want to add a development branch for yourself."
             ),
         ),
     ] = None
+    tool_path: Annotated[
+        Optional[str],
+        Field(
+            title="Path to tool",
+            alias="tool-path",
+            description=(
+                "This is the path to the parent directroy where the tool is "
+                "stored within the git repository. For example tools/animator."
+            ),
+        ),
+    ] = None
+    force: Annotated[
+        bool,
+        Field(
+            title="Force",
+            description="Force recreation of the environment, admin only.",
+        ),
+    ] = False
 
 
 class ToolParameterPayload(BaseModel):
@@ -128,22 +162,30 @@ class AddToolStatus(BaseModel):
     ]
 
 
-class ChangeVisibilityStatus(BaseModel):
+class ChangeToolStatus(BaseModel):
     """Response model for successful disabling of a tool from the database."""
 
-    message: Annotated[
-        str,
-        Field(
-            title="Human readable status.",
-        ),
-    ]
-    status_code: Annotated[
+    found_items: Annotated[
         int,
         Field(
-            title="Status code",
-            description=("Status code" "0: success, 1: could not change"),
+            title="Found items",
+            serialization_alias="found-items",
+            description="Number of items that matched the search criteria.",
+            examples=[2],
         ),
     ]
+    modified_items: Annotated[
+        int,
+        Field(
+            title="Modefied items",
+            description="Number of items that have been modified.",
+            examples=[1],
+            serialization_alias="modified-items",
+        ),
+    ]
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class CancelJobStatus(BaseModel):

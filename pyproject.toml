@@ -1,4 +1,6 @@
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 env = [
     "API_MONGO_HOST=localhost:27017",
     "API_MONGO_DB=search_stats",
@@ -13,10 +15,14 @@ env = [
     "API_REDIS_HOST=redis://localhost:6379",
     "API_REDIS_USER=redis",
     "API_REDIS_PASSWORD=secret",
+    "API_NO_SSH=1",
     "API_SERVICES=zarr-stream,databrowser",
-    "API_CONFIG={PWD}/freva-rest/src/freva_rest/api_config.toml",
-
+    "API_CONFIG={PWD}/dev-env/api_config.toml",
+    "API_TOOL_ADMIN_PASSWORD=secret",
+    "API_ADMIN_USERS=janedoe",
+    "API_TOOL_SSH_CERT=~/.ssh",
 ]
+
 filterwarnings = ["ignore::UserWarning"]
 [tool.flake8]
 ignore = ["F405", "F403"]

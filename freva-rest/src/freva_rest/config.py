@@ -7,6 +7,7 @@ variables.
 
 import logging
 import os
+from copy import deepcopy
 from functools import cached_property
 from pathlib import Path
 from socket import gethostname
@@ -16,9 +17,11 @@ from typing import (
     Dict,
     Iterator,
     List,
+    Literal,
     Optional,
     Set,
     Tuple,
+    TypedDict,
     Union,
     cast,
 )
@@ -32,6 +35,22 @@ from .logger import logger, logger_file_handle
 
 ConfigItem = Union[str, int, float, None]
 
+WorkLoadMangerOptions = Literal[
+    "local", "lsf", "moab", "oar", "pbs", "sge", "slurm"
+]
+
+
+class WLMOptions(TypedDict):
+    """Definitions of the scheduler options."""
+
+    system: WorkLoadMangerOptions
+    memory: Optional[str]
+    queue: Optional[str]
+    project: Optional[str]
+    walltime: Optional[str]
+    cpus: Optional[int]
+    extra_options: List[str]
+
 
 class ServerConfig(BaseModel):
     """Read the basic configuration for the server.
@@ -44,9 +63,7 @@ class ServerConfig(BaseModel):
         Union[str, Path],
         Field(
             title="API Config",
-            description=(
-                "Path to a .toml file holding the API" "configuration"
-            ),
+            description=("Path to a .toml file holding the API" "configuration"),
         ),
     ] = os.getenv("API_CONFIG", Path(__file__).parent / "api_config.toml")
     proxy: Annotated[
@@ -56,6 +73,17 @@ class ServerConfig(BaseModel):
             description="URL of a proxy that serves this API (if any).",
         ),
     ] = os.getenv("API_PROXY", "")
+    admin_users: Annotated[
+        Optional[List[str]],
+        Field(
+            title="Admin users",
+            description="List of user names that have admin rights.",
+        ),
+    ] = [
+        s.strip()
+        for s in os.getenv("API_ADMIN_USERS", "").split(",")
+        if s.strip()
+    ] or None
     debug: Annotated[
         Union[bool, int, str],
         Field(
@@ -187,10 +215,117 @@ class ServerConfig(BaseModel):
             description="The OIDC client secret, if any, used for authentication.",
         ),
     ] = os.getenv("API_OIDC_CLIENT_SECRET", "")
+    tool_host: Annotated[
+        str,
+        Field(
+            title="Scheduler host",
+            description="The host from where to schedule tool jobs.",
+        ),
+    ] = os.getenv("API_TOOL_HOST", "")
+    tool_admin_user: Annotated[
+        str,
+        Field(
+            title="Admin user name",
+            description="Admin user name connecting to the tool `host`.",
+        ),
+    ] = os.getenv("API_TOOL_ADMIN_USER", "")
+    tool_admin_password: Annotated[
+        str,
+        Field(
+            title="Admin password name",
+            description="Password for connecting to the tool `host`.",
+        ),
+    ] = os.getenv("API_TOOL_ADMIN_PASSWORD", "")
+    tool_ssh_cert: Annotated[
+        str,
+        Field(
+            title="SSH cert dir.",
+            description="Directory where the ssh certificates are stored.",
+        ),
+    ] = os.getenv("API_TOOL_SSH_CERT", "")
+    tool_conda_env_path: Annotated[
+        str,
+        Field(
+            title="Conda env dir.",
+            description="Directory to store the tools and thier conda envs.",
+        ),
+    ] = os.getenv("API_TOOL_CONDA_ENV_PATH", "")
+    tool_output_path: Annotated[
+        str,
+        Field(
+            title="Output directory",
+            description="Path where the output of the tool should be stored.",
+        ),
+    ] = os.getenv("API_TOOL_OUTPUT_PATH", "")
+    tool_python_path: Annotated[
+        str,
+        Field(
+            title="Remote python path",
+            description="The remote python path on the scheduler host.",
+        ),
+    ] = os.getenv("API_TOOL_PYTHON_PATH", "")
+    tool_wlm_system: Annotated[
+        Optional[WorkLoadMangerOptions],
+        Field(
+            title="Workload manger system",
+            description="The type of workload manager.",
+        ),
+    ] = cast(WorkLoadMangerOptions, os.getenv("API_TOOL_WLM_SYSTEM"))
+    tool_wlm_memory: Annotated[
+        str,
+        Field(
+            title="Workload manger max memory.",
+            description="How much memory should be allocated.",
+        ),
+    ] = os.getenv("API_TOOL_WLM_MEMORY", "")
+    tool_wlm_queue: Annotated[
+        str,
+        Field(
+            title="Workload manger qeueu",
+            description="Which queue the job is running on",
+        ),
+    ] = os.getenv("API_TOOL_WLM_QUEUE", "")
+    tool_wlm_project: Annotated[
+        str,
+        Field(
+            title="Workload manger project",
+            description="The project name that is charge for the calculation",
+        ),
+    ] = os.getenv("API_TOOL_WLM_PROJECT", "")
+    tool_wlm_walltime: Annotated[
+        str,
+        Field(
+            title="Workload manger walltime",
+            description="Max computing time used for the calculation",
+        ),
+    ] = os.getenv("API_TOOL_WLM_WALLTIME", "")
+    tool_wlm_cpus: Annotated[
+        str,
+        Field(
+            title="Workload manger cpus",
+            description="Numbers of CPUs per job",
+        ),
+    ] = os.getenv("API_TOOL_WLM_CPUS", "")
+    tool_wlm_extra_options: Annotated[
+        str,
+        Field(
+            title="Extra workload manger options",
+            description=(
+                "Extra scheduler options that are passed, if any. "
+                "Those extra settings have to be in the scheduler "
+                "specific dialect"
+            ),
+        ),
+    ] = os.getenv("API_TOOL_WLM_EXTRA_OPTIONS", "")
 
-    def _read_config(self, section: str, key: str) -> Any:
-        fallback = self._fallback_config[section][key] or None
-        return self._config.get(section, {}).get(key, fallback)
+    def _read_config(self, *keys: str) -> Any:
+        fallback = deepcopy(self._fallback_config)
+        cfg = deepcopy(self._config)
+        for key in keys:
+            fallback = fallback[key]
+            if isinstance(cfg, dict):
+                cfg = cfg.get(key, {})
+        return cfg or fallback
 
     def model_post_init(self, __context: Any = None) -> None:
         self._fallback_config: Dict[str, Any] = tomli.loads(
@@ -213,6 +348,9 @@ class ServerConfig(BaseModel):
         self.api_services = self.api_services or ",".join(
             self._read_config("restAPI", "services")
         )
+        self.admin_users = self.admin_users or self._read_config(
+            "restAPI", "admin_users"
+        )
         self.proxy = (
             self.proxy
             or self._read_config("restAPI", "proxy")
@@ -230,16 +368,12 @@ class ServerConfig(BaseModel):
         self.mongo_host = self.mongo_host or self._read_config(
             "mongo_db", "hostname"
         )
-        self.mongo_user = self.mongo_user or self._read_config(
-            "mongo_db", "user"
-        )
+        self.mongo_user = self.mongo_user or self._read_config("mongo_db", "user")
         self.mongo_password = self.mongo_password or self._read_config(
             "mongo_db", "password"
         )
         self.mongo_db = self.mongo_db or self._read_config("mongo_db", "name")
-        self.solr_host = self.solr_host or self._read_config(
-            "solr", "hostname"
-        )
+        self.solr_host = self.solr_host or self._read_config("solr", "hostname")
         self.solr_core = self.solr_core or self._read_config("solr", "core")
         self.redis_user = self.redis_user or self._read_config("cache", "user")
         self.redis_password = self.redis_password or self._read_config(
@@ -255,6 +389,53 @@ class ServerConfig(BaseModel):
         self.redis_host = self.redis_host or self._read_config(
             "cache", "hostname"
         )
+        self.tool_host = self.tool_host or self._read_config("tool", "host")
+        self.tool_ssh_cert = self.tool_ssh_cert or self._read_config(
+            "tool", "ssh_cert"
+        )
+        self.tool_admin_user = self.tool_admin_user or self._read_config(
+            "tool", "admin_user"
+        )
+        self.tool_admin_password = self.tool_admin_password or self._read_config(
+            "tool",
+            "admin_password",
+        )
+        self.tool_output_path = self.tool_output_path or self._read_config(
+            "tool", "output_path"
+        )
+        self.tool_conda_env_path = self.tool_conda_env_path or self._read_config(
+            "tool", "conda_env_path"
+        )
+        self.tool_python_path = self.tool_python_path or self._read_config(
+            "tool", "python_path"
+        )
+        self.tool_wlm_system = self.tool_wlm_system or self._read_config(
+            "tool", "wlm", "system"
+        )
+
+        self.tool_wlm_memory = self.tool_wlm_memory or self._read_config(
+            "tool", "wlm", "memory"
+        )
+        self.tool_wlm_queue = self.tool_wlm_queue or self._read_config(
+            "tool", "wlm", "queue"
+        )
+        self.tool_wlm_project = self.tool_wlm_project or self._read_config(
+            "tool", "wlm", "project"
+        )
+        self.tool_wlm_walltime = self.tool_wlm_walltime or self._read_config(
+            "tool", "wlm", "walltime"
+        )
+        self.tool_wlm_cpus = self.tool_wlm_cpus or self._read_config(
+            "tool", "wlm", "cpus"
+        )
+        self.tool_wlm_extra_options = (
+            self.tool_wlm_extra_options
+            or self._read_config(
+                "tool",
+                "wlm",
+                "extra_options",
+            )
+        )
 
     @staticmethod
     def get_url(url: str, default_port: Union[str, int]) -> str:
@@ -268,11 +449,37 @@ class ServerConfig(BaseModel):
         # If the original url has already a port in the suffix remove it
 
     @property
+    def dev_mode(self) -> bool:
+        """Check if we are running in development mode."""
+        dev_mode = os.getenv("DEV_MODE", "0")
+        if dev_mode.isdigit():
+            return bool(int(dev_mode))
+        return False
+
+    @property
+    def workload_manager_options(self) -> Optional[WLMOptions]:
+        """Define the workload manager options."""
+        cpus: Optional[int] = None
+        if self.tool_wlm_cpus.isdigit():
+            cpus = int(self.tool_wlm_cpus)
+        return WLMOptions(
+            system=self.tool_wlm_system or "local",
+            memory=self.tool_wlm_memory or None,
+            queue=self.tool_wlm_queue or None,
+            project=self.tool_wlm_project or None,
+            walltime=self.tool_wlm_walltime or None,
+            cpus=cpus,
+            extra_options=[
+                o.strip()
+                for o in self.tool_wlm_extra_options.split(",")
+                if o.strip()
+            ],
+        )
+
+    @property
     def services(self) -> Set[str]:
         """Define the services that are served."""
-        return set(
-            s.strip() for s in self.api_services.split(",") if s.strip()
-        )
+        return set(s.strip() for s in self.api_services.split(",") if s.strip())
 
     @property
     def redis_url(self) -> str:
@@ -391,9 +598,7 @@ class ServerConfig(BaseModel):
                     "name"
                 ] not in ("file_name", "file", "file_no_version"):
                     yield entry["name"]
-        except (
-            requests.exceptions.ConnectionError
-        ) as error:  # pragma: no cover
+        except requests.exceptions.ConnectionError as error:  # pragma: no cover
             logger.error(
                 "Connection to %s failed: %s", url, error
             )  # pragma: no cover

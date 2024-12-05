@@ -43,7 +43,7 @@ docker pull ghcr.io/freva-clint/freva-rest:latest
 By default the container starts with the ``freva-rest-service`` command.
 See the `freva-rest-server --help` command for configure options.
 
-You can adjust the server settings by either overriding the default flags or 
+You can adjust the server settings by either overriding the default flags or
 setting environment variables in the container.
 
 ### Available Environment Variables
@@ -75,9 +75,26 @@ API_REDIS_SSL_CERTFILE=/certs/client-cert.pem
 API_REDIS_SSL_KEYFILE=/certs/client-key.pem
 
 # OIDC Configuration
-API_OIDC_URL=http://keycloak:8080/realms/freva/.well-known/openid-configuration
+API_OIDC_DISCOVERY_URL=
 API_OIDC_CLIENT_ID=freva     #Name of the client (app) that is used to create the access tokens, defaults to freva
 API_OIDC_CLIENT_SECRET=      # Optional: Set if your OIDC instance uses a client secret
+
+# Tool api settings
+API_TOOL_HOST=  # The host from where to schedule tool jobs.
+API_TOOL_ADMIN_USER=  # Admin user name connecting to the tool `host`.
+API_TOOL_ADMIN_PASSWORD=  # Password for connecting to the tool `host`.
+API_TOOL_SSH_CERT=  # Directory where the ssh certificates are stored.
+API_TOOL_CONDA_ENV_PATH=  # Directory to store the tools and thier conda envs.
+API_TOOL_OUTPUT_PATH=  # Path where the output of the tool should be stored.
+API_TOOL_PYTHON_PATH=/usr/bin/python3  # The remote python path on the scheduler host.
+API_TOOL_WLM_SYSTEM=  # Workload manger system.
+API_TOOL_WLM_MEMORY=  # How much memory should be allocated.
+API_TOOL_WLM_QUEUE=  # Which queue the job is running on.
+API_TOOL_WLM_PROJECT=  # The project name that is charge for the calculation.
+API_TOOL_WLM_WALLTIME=  # Max computing time used for the calculation
+API_TOOL_WLM_CPUS=  # Numbers of CPUs per job.
+API_TOOL_WLM_EXTRA_OPTIONS=  # Extra scheduler options that are passed.
+
 
 # Service activation flags
 # Set to 1 to enable, 0 to disable the service

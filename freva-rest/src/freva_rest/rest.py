@@ -20,9 +20,13 @@ the Authorization header for secured endpoints.
 
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
+from uuid import NAMESPACE_URL, uuid5
 
+import appdirs
+import filelock
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.requests import Request
@@ -75,6 +79,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     Things before yield are executed on startup. Things after on teardown.
     """
+    cache_dir = Path(appdirs.user_cache_dir("freva-rest"))
+    cache_dir.mkdir(exist_ok=True, parents=True)
+    lock = filelock.FileLock(cache_dir / "client_secret.txt.lock")
+    client_secret_file = cache_dir / "client_secret.txt"
+    secret = str(uuid5(NAMESPACE_URL, datetime.now().isoformat()))
+    if not client_secret_file.exists():  # pragma: no cover
+        with lock:
+            client_secret_file.write_text(secret, encoding="utf-8")
     try:
         yield
     finally:

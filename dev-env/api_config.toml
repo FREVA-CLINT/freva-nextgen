@@ -3,6 +3,7 @@
 [restAPI]
 services = ["databrowser", "zarr-stream"]
 proxy = ""
+admin_users = ["janedoe"]
 
 [solr]
 hostname = "localhost"
