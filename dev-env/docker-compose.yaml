@@ -82,6 +82,33 @@ services:
     volumes:
       - ./config/mongo/mongo-userdata-init.js:/docker-entrypoint-initdb.d/mongo-userdata-init.js:ro
 
+  stac-api:
+    networks:
+      - freva-rest
+    image: ghcr.io/mo-dkrz/stac-fastapi-os:v2.2.9
+    environment:
+      - RUN_LOCAL_OS=1
+      - STAC_FASTAPI_TITLE=Freva STAC Service
+      - STAC_FASTAPI_DESCRIPTION=`Freva STAC Service` provides a SpatioTemporal Asset Catalog (STAC) API implementation geospatial data cataloging and discovery.
+      - STAC_FASTAPI_ROUTE_DEPENDENCIES=[{"routes":[{"path":"/collections/{collection_id}/items/{item_id}","method":["PUT","DELETE"]},{"path":"/collections/{collection_id}/items","method":["POST"]},{"path":"/collections","method":["POST"]},{"path":"/collections/{collection_id}","method":["PUT","DELETE"]},{"path":"/collections/{collection_id}/bulk_items","method":["POST"]},{"path":"/aggregations","method":["POST"]},{"path":"/collections/{collection_id}/aggregations","method":["POST"]},{"path":"/aggregate","method":["POST"]},{"path":"/aggregate","method":["POST"]},{"path":"/collections/{collection_id}/aggregate","method":["POST"]}],"dependencies":[{"method":"stac_fastapi.core.basic_auth.BasicAuth","kwargs":{"credentials":[{"username":"stac","password":"secret"}]}}]}]
+      - STAC_USERNAME=stac
+      - STAC_PASSWORD=secret
+    ports:
+      - "8083:8080"
+      - "9202:9202"
+
+  stac-browser:
+    networks:
+      - freva-rest
+    image: ghcr.io/radiantearth/stac-browser:latest
+    environment:
+      - SB_catalogUrl=http://localhost:8083
+      - SB_catalogTitle=Freva STAC Service
+    ports:
+      - "8085:8080"
+    depends_on:
+      - stac-api
+
 networks:
   freva-rest:
     driver: bridge

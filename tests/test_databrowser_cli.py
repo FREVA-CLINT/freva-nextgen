@@ -107,6 +107,18 @@ def test_intake_catalogue_no_zarr(
         with open(temp_f.name, "r") as stream:
             assert isinstance(json.load(stream), dict)
 
+def test_stac_collection(
+    cli_runner: CliRunner, test_server: str
+) -> None:
+    """Test stacl collection"""
+
+    res = cli_runner.invoke(app, ["stac-collection", "--host", test_server])
+    assert res.exit_code == 0
+    assert res.stdout
+    # no result
+    res = cli_runner.invoke(app, ["stac-collection", "--host", test_server, "foo=b"])
+    assert res.exit_code == 1
+    assert not res.stdout
 
 def test_intake_files_zarr(
     cli_runner: CliRunner, test_server: str, auth_instance: Auth

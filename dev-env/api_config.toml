@@ -29,3 +29,14 @@ key_file = ""
 discovery_url = "http://localhost:8080/realms/freva/.well-known/openid-configuration"
 client_id = "freva"
 client_secret = ""
+
+[stacapi]
+hostname = "localhost"
+port = 8083
+user = "stac"
+password = "secret"
+
+
+[stacbrowser]
+hostname = "localhost"
+port = 8085

@@ -1,8 +1,17 @@
 """Main script that runs the rest API."""
 
+import uuid
 from typing import Annotated, Any, Dict, List, Literal, Union
 
-from fastapi import Body, Depends, HTTPException, Query, Request, status
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    status,
+)
 from fastapi.responses import (
     JSONResponse,
     PlainTextResponse,
@@ -39,9 +48,7 @@ class AddUserDataRequestBody(BaseModel):
     facets: Dict[str, Any] = Field(
         ...,
         description="Key-value pairs representing metadata search attributes.",
-        examples=[
-            {"project": "user-data", "product": "new", "institute": "globe"}
-        ],
+        examples=[{"project": "user-data", "product": "new", "institute": "globe"}],
     )
 
 
@@ -71,9 +78,7 @@ async def overview() -> SearchFlavours:
                 for f in translator.forward_lookup.values()
                 if f not in translator.cordex_keys
             ]
-    return SearchFlavours(
-        flavours=list(Translator.flavours), attributes=attributes
-    )
+    return SearchFlavours(flavours=list(Translator.flavours), attributes=attributes)
 
 
 @app.get(
@@ -91,9 +96,7 @@ async def metadata_search(
     uniq_key: Literal["file", "uri"],
     multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
     translate: Annotated[bool, SolrSchema.params["translate"]] = True,
-    facets: Annotated[
-        Union[List[str], None], SolrSchema.params["facets"]
-    ] = None,
+    facets: Annotated[Union[List[str], None], SolrSchema.params["facets"]] = None,
     request: Request = Required,
 ) -> JSONResponse:
     """Query the available metadata.
@@ -115,9 +118,7 @@ async def metadata_search(
         start=0,
         **SolrSchema.process_parameters(request),
     )
-    status_code, result = await solr_search.extended_search(
-        facets or [], max_results=0
-    )
+    status_code, result = await solr_search.extended_search(facets or [], max_results=0)
     await solr_search.store_results(result.total_count, status_code)
     output = result.dict()
     del output["search_results"]
@@ -222,6 +223,62 @@ async def intake_catalogue(
 
 
 @app.get(
+    "/api/freva-nextgen/databrowser/stac-collection/{flavour}/{uniq_key}",
+    tags=["Data search"],
+    status_code=200,
+    responses={
+        413: {"description": "Result stream too big."},
+        422: {"description": "Invalid flavour or search keys."},
+        503: {"description": "Search backend error"},
+        500: {"description": "Internal server error"},
+    },
+    response_class=JSONResponse,
+)
+async def stac_collection(
+    flavour: FlavourType,
+    uniq_key: Literal["file", "uri"],
+    start: Annotated[int, SolrSchema.params["start"]] = 0,
+    multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
+    translate: Annotated[bool, SolrSchema.params["translate"]] = True,
+    max_results: Annotated[int, SolrSchema.params["max_results"]] = -1,
+    request: Request = Required,
+    background_tasks: BackgroundTasks = Required,
+) -> Dict[str, str]:
+    """Create a STAC collection from a freva search.
+
+    This endpoint transforms Freva databrowser search results into a dynamic
+    STAC (SpatioTemporal Asset Catalog) Collection. STAC is an open standard
+    for geospatial data catalouging, enabling consistent discovery and access
+    of climate datasets, satellite imagery and spatiotemporal data. It provides
+    a common language for describing geospatial information and related metadata.
+    """
+    solr_search = await Solr.validate_parameters(
+        server_config,
+        flavour=flavour,
+        uniq_key=uniq_key,
+        start=start,
+        multi_version=multi_version,
+        translate=translate,
+        **SolrSchema.process_parameters(request),
+    )
+    status_code, total_count = await solr_search.validate_stac()
+    await solr_search.store_results(total_count, status_code)
+    if total_count == 0:
+        raise HTTPException(status_code=404, detail="No results found.")
+    if total_count > max_results and max_results > 0:
+        raise HTTPException(status_code=413, detail="Result stream too big.")
+    collection_id = f"freva-{str(uuid.uuid4())}"
+    background_tasks.add_task(solr_search.init_stac_collection, request, collection_id)
+    return {
+        "status": (
+            f"STAC catalog creation initiated successfully. "
+            f"To see the collection, use this link: "
+            f"{request.base_url}/stac/{collection_id}"
+        )
+    }
+
+
+@app.get(
     "/api/freva-nextgen/databrowser/extended-search/{flavour}/{uniq_key}",
     include_in_schema=False,
 )
@@ -232,9 +289,7 @@ async def extended_search(
     multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
     translate: Annotated[bool, SolrSchema.params["translate"]] = True,
     max_results: Annotated[int, SolrSchema.params["batch_size"]] = 150,
-    facets: Annotated[
-        Union[List[str], None], SolrSchema.params["facets"]
-    ] = None,
+    facets: Annotated[Union[List[str], None], SolrSchema.params["facets"]] = None,
     request: Request = Required,
 ) -> JSONResponse:
     """This endpoint is used by the databrowser web ui client."""
@@ -276,8 +331,7 @@ async def load_data(
             title="Catalogue type",
             alias="catalogue-type",
             description=(
-                "Set the type of catalogue you want to create from this"
-                "query"
+                "Set the type of catalogue you want to create from this" "query"
             ),
         ),
     ] = None,
@@ -345,10 +399,8 @@ async def post_user_data(
     solr_instance = Solr(server_config)
     try:
         try:
-            validated_user_metadata = (
-                await solr_instance._validate_user_metadata(
-                    request.user_metadata
-                )
+            validated_user_metadata = await solr_instance._validate_user_metadata(
+                request.user_metadata
             )
         except HTTPException as error:
             raise HTTPException(
@@ -408,6 +460,4 @@ async def delete_user_data(
             detail=f"Failed to delete user data: {error}",
         )
 
-    return {
-        "status": "User data has been deleted successfully from the databrowser."
-    }
+    return {"status": "User data has been deleted successfully from the databrowser."}

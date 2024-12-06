@@ -462,6 +462,111 @@ def intake_catalogue(
             print(Path(temp_f.name).read_text())
 
 
+@databrowser_app.command(
+    name="stac-collection",
+    help="Create a STAC collection from the search."
+)
+@exception_handler
+def stac_collection(
+    search_keys: Optional[List[str]] = typer.Argument(
+        default=None,
+        help="Refine your data search with this `key=value` pair search "
+        "parameters. The parameters could be, depending on the DRS standard, "
+        "flavour product, project model etc.",
+    ),
+    facets: Optional[List[str]] = typer.Option(
+        None,
+        "--facet",
+        help=(
+            "If you are not sure about the correct search key's you can use"
+            " the ``--facet`` flag to search of any matching entries. For "
+            "example --facet 'era5' would allow you to search for any entries"
+            " containing era5, regardless of project, product etc."
+        ),
+    ),
+    uniq_key: UniqKeys = typer.Option(
+        "file",
+        "--uniq-key",
+        "-u",
+        help=(
+            "The type of search result, which can be either “file” "
+            "or “uri”. This parameter determines whether the search will be "
+            "based on file paths or Uniform Resource Identifiers"
+        ),
+    ),
+    flavour: Flavours = typer.Option(
+        "freva",
+        "--flavour",
+        "-f",
+        help=(
+            "The Data Reference Syntax (DRS) standard specifying the type "
+            "of climate datasets to query."
+        ),
+    ),
+    time_select: TimeSelect = typer.Option(
+        "flexible",
+        "-ts",
+        "--time-select",
+        help=TimeSelect.get_help(),
+    ),
+    time: Optional[str] = typer.Option(
+        None,
+        "-t",
+        "--time",
+        help=(
+            "Special search facet to refine/subset search results by time. "
+            "This can be a string representation of a time range or a single "
+            "time step. The time steps have to follow ISO-8601. Valid strings "
+            "are ``%Y-%m-%dT%H:%M`` to ``%Y-%m-%dT%H:%M`` for time ranges and "
+            "``%Y-%m-%dT%H:%M``. **Note**: You don't have to give the full "
+            "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
+            " valid."
+        ),
+    ),
+    host: Optional[str] = typer.Option(
+        None,
+        "--host",
+        help=(
+            "Set the hostname of the databrowser, if not set (default) "
+            "the hostname is read from a config file"
+        ),
+    ),
+    verbose: int = typer.Option(0, "-v", help="Increase verbosity", count=True),
+    multiversion: bool = typer.Option(
+        False,
+        "--multi-version",
+        help="Select all versions and not just the latest version (default).",
+    ),
+    version: Optional[bool] = typer.Option(
+        False,
+        "-V",
+        "--version",
+        help="Show version an exit",
+        callback=version_callback,
+    ),
+) -> None:
+    """Create a STAC collection for climate datasets based on the specified
+    Data Reference Syntax (DRS) standard (flavour) and the type of search
+    result (uniq_key), which can be either "file" or "uri"."""
+    logger.set_verbosity(verbose)
+    result = databrowser(
+        *(facets or []),
+        time=time or "",
+        time_select=cast(Literal["file", "flexible", "strict"], time_select),
+        flavour=cast(
+            Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
+            flavour.value,
+        ),
+        uniq_key=cast(Literal["uri", "file"], uniq_key.value),
+        host=host,
+        fail_on_error=False,
+        multiversion=multiversion,
+        stream_zarr=False,
+        **(parse_cli_args(search_keys or [])),
+    )
+    print(result.stac_collection())
+
+
 @databrowser_app.command(name="data-count", help="Count the databrowser search results")
 @exception_handler
 def count_values(

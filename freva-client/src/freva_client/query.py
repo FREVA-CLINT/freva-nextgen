@@ -390,6 +390,37 @@ class databrowser:
             self._create_intake_catalogue_file(temp_f.name)
             return intake.open_esm_datastore(temp_f.name)
 
+    def stac_collection(self) -> Dict[str, Any]:
+        """Create an STAC API collection endpoint from the search.
+        This method creates a STAC API collection endpoint from the
+        current object search.
+
+        Returns
+        ~~~~~~~
+        Dict[str, Any]: STAC API collection endpoint.
+
+        Raises
+        ~~~~~~
+        ValueError: If stac-collection creation failed.
+
+        Example
+        ~~~~~~~
+        Let's create an STAC API collection endpoint to get access
+        to the metadata and data:
+
+        .. execute_code::
+
+            from freva_client import databrowser
+            db = databrowser(dataset="cmip6-hsm")
+            print(db.stac_collection())
+
+        """
+        stac_url = self._cfg.stac_url
+        result = self._request("GET", stac_url)
+        if result is None:
+            raise ValueError("No results found")
+        return cast(Dict[str, Any], result.json())
+
     @classmethod
     def count_values(
         cls,

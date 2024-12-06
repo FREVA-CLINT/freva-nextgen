@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from functools import cached_property, wraps
+from textwrap import dedent
 from typing import (
     Any,
     AsyncIterator,
@@ -17,6 +18,7 @@ from typing import (
     Iterable,
     List,
     Literal,
+    Optional,
     Sequence,
     Sized,
     Tuple,
@@ -24,9 +26,11 @@ from typing import (
     cast,
 )
 
-import aiohttp
+import httpx
+import pystac
+from dateutil import parser
 from dateutil.parser import ParserError, parse
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from pydantic import BaseModel
 from pymongo import UpdateOne, errors
 from typing_extensions import TypedDict
@@ -311,9 +315,7 @@ class Translator:
                 if v == "primary"
             ]
         else:
-            _keys = [
-                k for (k, v) in self._freva_facets.items() if v == "primary"
-            ]
+            _keys = [k for (k, v) in self._freva_facets.items() if v == "primary"]
         if self.flavour in ("cordex",):
             for key in self.cordex_keys:
                 _keys.append(key)
@@ -380,7 +382,7 @@ class Solr:
     uniq_keys: Tuple[str, str] = ("file", "uri")
     """The names of all unique keys in the indexing system."""
 
-    timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=30)
+    timeout: httpx.Timeout = httpx.Timeout(30)
     """30 seconds for timeout."""
 
     batch_size: int = 150
@@ -432,11 +434,6 @@ class Solr:
         self.url, self.query = self._get_url()
         self.query["start"] = start
         self.query["sort"] = "file desc"
-
-        self.payload: Union[
-            List[Dict[str, Union[str, List[str], Dict[str, str]]]],
-            Dict[str, Union[str, List[str], Dict[str, str]]],
-        ] = []
         self.fwrites: Dict[str, str] = {}
         self.total_ingested_files = 0
         self.total_duplicated_files = 0
@@ -446,6 +443,17 @@ class Solr:
         # should be changed to cloud storage type. We need to find an approach
         # to determine the file system
         self.fs_type: str = "posix"
+        self.spatial_extent = {
+            "minx": float("inf"),
+            "miny": float("inf"),
+            "maxx": float("-inf"),
+            "maxy": float("-inf"),
+        }
+        self.temporal_extent: dict[str, Optional[datetime]] = {
+            "start": None,
+            "end": None,
+        }
+        self.assets_prereqs: Dict[str, Union[str, int]] = {}
 
     async def _is_query_duplicate(self, uri: str, file_path: str) -> bool:
         """
@@ -507,56 +515,92 @@ class Solr:
             self.uniq_key,
             self.query,
         )
-        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
-                async with session.get(self.url, params=self.query) as res:
-                    status = res.status
-                    try:
-                        await self.check_for_status(res)
-                        search = await res.json()
-                    except HTTPException:  # pragma: no cover
-                        search = {}  # pragma: no cover
+                response = await client.get(self.url, params=self.query)
+                status = response.status_code
+                try:
+                    await self.check_for_status(response)
+                    search = response.json()
+                except HTTPException:  # pragma: no cover
+                    search = {}  # pragma: no cover
             except Exception as error:
                 logger.error("Connection to %s failed: %s", self.url, error)
                 raise HTTPException(
                     status_code=503,
-                    detail="Could not connect to search instance",
+                    detail="Could not connect to Solr server",
                 )
-        yield status, search
+            yield status, search
 
     @asynccontextmanager
-    async def _session_post(self) -> AsyncIterator[Tuple[int, Dict[str, Any]]]:
+    async def _session_post(
+        self,
+        url: str,
+        payload: Union[
+            Dict[str, Any],
+            Dict[str, pystac.Collection],
+            List[Dict[Any, Any]],
+        ],
+    ) -> AsyncIterator[Tuple[int, Dict[str, Any]]]:
         """Wrap the post request round a try and catch statement."""
         logger.info(
-            "Sending POST request to %s for uniq_key: %s with payload: %s",
-            self._post_url,
-            self.uniq_key,
-            self.payload,
+            "Sending POST request to %s with payload: %s",
+            url,
+            payload,
         )
-        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
-                async with session.post(
-                    self._post_url, json=self.payload
-                ) as res:
-                    try:
-                        await self.check_for_status(res)
-                        logger.info(
-                            "POST request successful with status: %d",
-                            res.status,
-                        )
-                        response_data = await res.json()
-                    except HTTPException:  # pragma: no cover
-                        logger.error(
-                            "POST request failed: %s", await res.text()
-                        )
-                        response_data = {}
+                response = await client.post(url, json=payload)
+                try:
+                    await self.check_for_status(response)
+                    logger.info(
+                        "POST request successful with status: %d",
+                        response.status_code,
+                    )
+                    response_data = response.json()
+                except HTTPException:  # pragma: no cover
+                    logger.error("POST request failed: %s", response.text)
+                    response_data = {}
             except Exception as error:
-                logger.error("Connection to %s failed: %s", self.url, error)
+                logger.error("Connection to %s failed: %s", url, error)
                 raise HTTPException(
                     status_code=503,
-                    detail="Could not connect to Solr POST endpoint",
+                    detail="Could not connect to the instance",
                 )
-        yield res.status, response_data
+            yield response.status_code, response_data
+
+    @asynccontextmanager
+    async def _session_put(
+        self,
+        url: str,
+        payload: Dict[str, Any],
+    ) -> AsyncIterator[Tuple[int, Dict[str, Any]]]:
+        """Wrap the put request round a try and catch statement."""
+        logger.info(
+            "Sending PUT request to %s: with payload: %s",
+            url,
+            payload,
+        )
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.put(url, json=payload)
+                try:
+                    await self.check_for_status(response)
+                    logger.info(
+                        "PUT request successful with status: %d",
+                        response.status_code,
+                    )
+                    response_data = response.json()
+                except HTTPException:  # pragma: no cover
+                    logger.error("PUT request failed: %s", response.text)
+                    response_data = {}
+            except Exception as error:
+                logger.error("Connection to %s failed: %s", url, error)
+                raise HTTPException(
+                    status_code=503,
+                    detail="Could not connect to the instance",
+                )
+            yield response.status_code, response_data
 
     @classmethod
     async def validate_parameters(
@@ -598,9 +642,7 @@ class Solr:
                 key not in translator.valid_facets
                 and key not in ("time_select",) + cls.uniq_keys
             ):
-                raise HTTPException(
-                    status_code=422, detail="Could not validate input."
-                )
+                raise HTTPException(status_code=422, detail="Could not validate input.")
         return Solr(
             config,
             flavour=flavour,
@@ -658,9 +700,7 @@ class Solr:
             raise ValueError(f"Choose `time_select` from {methods}") from exc
         start, _, end = time.lower().partition("to")
         try:
-            start = parse(
-                start or "1", default=datetime(1, 1, 1, 0, 0, 0)
-            ).isoformat()
+            start = parse(start or "1", default=datetime(1, 1, 1, 0, 0, 0)).isoformat()
             end = parse(
                 end or "9999", default=datetime(9999, 12, 31, 23, 59, 59)
             ).isoformat()
@@ -729,9 +769,537 @@ class Solr:
             catalogue=catalogue, total_count=total_count
         )
 
-    async def _delete_from_mongo(
-        self, search_keys: Dict[str, Union[str, int]]
+    async def _create_stac_collection(self, collection_id: str) -> pystac.Collection:
+        usage_desc = dedent(
+            f"""
+            ## {self.translator.flavour.upper()} Dataset Collection
+
+            This is a collection from flavour **{self.translator.flavour}**
+
+            **`Attention`:** _Item ingestion in progress. The STAC collection
+            is currently being populated with items. This collection will be
+            ready for use when this notice disappears upon refresh.__
+
+            ___
+            ℹ️ Contact the Freva team at [freva@dkrz.de](mailto:freva@dkrz.de)
+            to ask questions or report issues.
+        """
+        ).strip()
+        intake_desc = dedent(
+            f"""
+            # Installing Intake-ESM
+            ```bash
+            # Method 1: Using pip
+            pip install intake-esm
+            # Method 2: Using conda (recommended)
+            conda install -c conda-forge intake-esm
+            ```
+            # Quick Guide: INTAKE-ESM Catalog on Levante (Python)
+            ```python
+            import intake
+            # create a catalog object from a EMS JSON file containing dataset metadata
+            cat = intake.open_esm_datastore(
+            '{str(self.assets_prereqs.get('full_endpoint')).replace(
+                "stac-collection", "intake-catalogue")}')
+            ```
+        """
+        )
+        collection = pystac.Collection(
+            id=collection_id,
+            title=f"Dataset {collection_id[:13]}",
+            description=usage_desc.strip(),
+            extent=pystac.Extent(
+                spatial=pystac.SpatialExtent([[-180.0, -90.0, 180.0, 90.0]]),
+                temporal=pystac.TemporalExtent([[None, None]]),  # type: ignore
+            ),
+        )
+        assets = {
+            "freva-databrowser": pystac.Asset(
+                href=(
+                    f"{self.assets_prereqs.get('base_url')}databrowser/?"
+                    f"{self.assets_prereqs.get('only_params')}"
+                ),
+                title="Freva Web DataBrowser",
+                description=(
+                    "Interactive web interface for data exploration and analysis. "
+                    "Access through any browser."
+                ),
+                roles=["overview"],
+                media_type="text/html",
+            ),
+            "intake-catalogue": pystac.Asset(
+                href=str(self.assets_prereqs.get("full_endpoint")).replace(
+                    "stac-collection", "intake-catalogue"
+                ),
+                title="Intake-ESM Catalogue",
+                description=intake_desc,
+                roles=["metadata"],
+                media_type="application/json",
+            ),
+            "download-zarr": pystac.Asset(
+                href=(
+                    f"{self.assets_prereqs.get('base_url')}api/freva-nextgen/"
+                    f"databrowser/load/{self.translator.flavour}?"
+                    f"{self.assets_prereqs.get('only_params')}"
+                ),
+                title="Download Zarr Dataset",
+                description="Direct access to data in Zarr format.",
+                roles=["data"],
+                media_type="application/vnd+zarr",
+                extra_fields={
+                    "requires": ["oauth2"],
+                    "authentication": {
+                        "type": "oauth2",
+                        "description": (
+                            "Authentication using your Freva credentials is required."
+                        ),
+                    },
+                },
+            ),
+        }
+
+        for key, asset in assets.items():
+            collection.add_asset(key, asset)
+
+        if self.facets:
+            collection.extra_fields["search_keys"] = {
+                key: values for key, values in self.facets.items()
+            }
+        else:
+            logger.info("No search keys found for collection")
+
+        collection.providers = [
+            pystac.Provider(
+                name="Deutsches Klimarechenzentrum (DKRZ)",
+                url="https://www.dkrz.de",
+            )
+        ]
+        return collection
+
+    async def _iter_stac_items(self) -> AsyncIterator[List[pystac.Item]]:
+        self.query["cursorMark"] = "*"
+        items_batch = []
+        while True:
+            async with self._session_get() as res:
+                _, results = res
+            for result in results.get("response", {}).get("docs", [{}]):
+                item = await self._create_stac_item(result)
+                items_batch.append(item)
+
+                if len(items_batch) >= self.batch_size:
+                    yield items_batch
+                    items_batch = []
+
+            if items_batch:
+                yield items_batch
+            next_cursor_mark = results.get("nextCursorMark", None)
+            if next_cursor_mark == self.query["cursorMark"] or not results:
+                break
+            self.query["cursorMark"] = next_cursor_mark
+
+    def parse_datetime(self, time_str: str) -> Tuple[datetime, datetime]:
+        """
+        Parse a time range string into start and end datetimes.
+
+        Parameters
+        ----------
+        time_str : str
+            Time range string in rdate format '[start_time TO end_time]'
+
+        Returns
+        -------
+        Tuple[datetime, datetime]
+            Start and end datetime objects
+        """
+        clean_start_time = time_str.replace("[", "").split(" TO ")[0]
+        clean_end_time = time_str.replace("]", "").split(" TO ")[1]
+        return parser.parse(clean_start_time), parser.parse(clean_end_time)
+
+    def parse_bbox(self, bbox_str: Union[str, List[str]]) -> List[float]:
+        """
+        Parse a bounding box string into coordinates.
+
+        Parameters
+        ----------
+        bbox_str : Union[str, List[str]]
+            Bounding box in ENVELOPE format: 'ENVELOPE(west,east,north,south)'
+            or as a list with one element
+
+        Returns
+        -------
+        List[float]
+            Coordinates as [minx, miny, maxx, maxy]
+        """
+        if isinstance(bbox_str, list):
+            bbox_str = bbox_str[0]
+        nums = [
+            float(x)
+            for x in bbox_str.replace("ENVELOPE(", "").replace(")", "").split(",")
+        ]
+        return [nums[0], nums[3], nums[1], nums[2]]
+
+    def _update_spatial_extent(self, bbox: List[float]) -> None:
+        """
+        Update collection's spatial extent based on item bbox.
+
+        Parameters
+        ----------
+        bbox : List[float]
+            Bounding box coordinates [minx, miny, maxx, maxy]
+        """
+        self.spatial_extent["minx"] = min(self.spatial_extent["minx"], bbox[0])
+        self.spatial_extent["miny"] = min(self.spatial_extent["miny"], bbox[1])
+        self.spatial_extent["maxx"] = max(self.spatial_extent["maxx"], bbox[2])
+        self.spatial_extent["maxy"] = max(self.spatial_extent["maxy"], bbox[3])
+
+    def _update_temporal_extent(self, start_time: datetime, end_time: datetime) -> None:
+        """
+        Update collection's temporal extent based on item timerange.
+
+        Parameters
+        ----------
+        start_time : datetime
+            Item's start datetime
+        end_time : datetime
+            Item's end datetime
+        """
+        if self.temporal_extent["start"] is None:
+            self.temporal_extent["start"] = start_time
+        elif start_time < self.temporal_extent["start"]:
+            self.temporal_extent["start"] = start_time
+
+        if self.temporal_extent["end"] is None:
+            self.temporal_extent["end"] = end_time
+        elif end_time > self.temporal_extent["end"]:
+            self.temporal_extent["end"] = end_time
+
+    async def _create_stac_item(self, result: Dict[str, Any]) -> pystac.Item:
+        """
+        Create a STAC Item from a result dictionary.
+
+        Args:
+            result (Dict[str, Any]): Dictionary containing item metadata
+
+        Returns:
+            pystac.Item: Created STAC item
+        """
+        intake_desc = dedent(
+            f"""
+            # Installing Intake-ESM
+            ```bash
+            # Method 1: Using pip
+            pip install intake-esm
+            # Method 2: Using conda (recommended)
+            conda install -c conda-forge intake-esm
+            ```
+            # Quick Guide: INTAKE-ESM Catalog on Levante (Python)
+            ```python
+            import intake
+            # create a catalog object from a EMS JSON file containing dataset metadata
+            cat = intake.open_esm_datastore('{
+                str(self.assets_prereqs.get("full_endpoint")).replace(
+                    "stac-collection",
+                    "intake-catalogue"
+                )
+            }')
+            ```
+            """
+        )
+        id = result.get(self.uniq_key, "")
+        normalized_id = (
+            id.replace("https://", "")
+            .replace("http://", "")
+            .replace("/", "-")
+            .replace(".", "-")
+            .strip()
+        )
+        bbox = result.get("bbox")
+        if bbox:
+            try:
+                bbox = self.parse_bbox(bbox)
+                self._update_spatial_extent(bbox)
+            except ValueError as e:  # pragma: no cover
+                logger.warning(f"Invalid bbox for {id}: {e}")
+                bbox = None
+
+        time = result.get("time")
+        start_time = end_time = None
+        if time:
+            try:
+                start_time, end_time = self.parse_datetime(time)
+                self._update_temporal_extent(start_time, end_time)
+            except ValueError as e:
+                logger.warning(f"Invalid datetime for {id}: {e}")
+
+        geometry = None
+        if bbox:
+            geometry = {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [bbox[0], bbox[1]],
+                        [bbox[2], bbox[1]],
+                        [bbox[2], bbox[3]],
+                        [bbox[0], bbox[3]],
+                        [bbox[0], bbox[1]],
+                    ]
+                ],
+            }
+
+        properties = {
+            **{
+                k: result.get(k)
+                for k in self._config.solr_fields
+                if k in result and result.get(k) is not None
+            },
+            "title": id,
+        }
+        item = pystac.Item(
+            id=normalized_id,
+            collection=self.collection.id,
+            geometry=geometry,
+            bbox=bbox,
+            datetime=start_time or datetime.now(),
+            properties=properties,
+        )
+
+        if start_time and end_time:
+            item.common_metadata.start_datetime = start_time
+            item.common_metadata.end_datetime = end_time
+        assets = {
+            "freva-databrowser": pystac.Asset(
+                href=(
+                    f"{self.assets_prereqs.get('base_url')}databrowser/?"
+                    f"{self.assets_prereqs.get('only_params')}"
+                ),
+                title="Freva Web DaaBrowser",
+                description=(
+                    "Access the Freva web interface for data exploration and analysis"
+                ),
+                roles=["overview"],
+                media_type="text/html",
+            ),
+            "intake-catalogue": pystac.Asset(
+                href=(
+                    str(self.assets_prereqs.get("full_endpoint")).replace(
+                        "stac-collection", "intake-catalogue"
+                    )
+                    + f"?{self.uniq_key}={id}"
+                ),
+                title="Intake Catalogue",
+                description=intake_desc,
+                roles=["metadata"],
+                media_type="application/json",
+            ),
+            "download-zarr": pystac.Asset(
+                href=(
+                    f"{self.assets_prereqs.get('base_url')}api/freva-nextgen/"
+                    f"databrowser/load/{self.translator.flavour}?"
+                    f"{self.assets_prereqs.get('only_params')}&{self.uniq_key}={id}"
+                ),
+                title="Stream Zarr Data",
+                description="Download the data in Zarr format",
+                roles=["data"],
+                media_type="application/vnd+zarr",
+                extra_fields={
+                    "requires": ["oauth2"],
+                    "authentication": {
+                        "type": "oauth2",
+                        "description": (
+                            "Authentication using your Freva credentials is required."
+                        ),
+                    },
+                },
+            ),
+        }
+
+        for key, asset in assets.items():
+            item.add_asset(key, asset)
+
+        return item
+
+    def finalize_stac_collection(self) -> None:
+        """
+        Finalize STAC collection by updating spatial and temporal extents.
+
+        Raises
+        ------
+        Exception
+            If collection validation fails
+        """
+        collection_desc = dedent(
+            f"""
+            ## {self.translator.flavour.upper()} Flavour Dataset Collection
+
+            A curated climate datasets STAC Collection from the
+            `{self.translator.flavour.upper()}` flavour, and
+            specific search parameters through the Freva
+            databrowser. Includes standardized metadata and direct
+            data access capabilities.
+
+            ___
+            ℹ️ Contact the Freva team at [freva@dkrz.de](mailto:freva@dkrz.de)
+            to ask questions or report issues.
+        """
+        ).strip()
+        if self.spatial_extent["minx"] != float("inf") and self.spatial_extent[
+            "maxx"
+        ] != float("-inf"):
+
+            bbox = [
+                self.spatial_extent["minx"],
+                self.spatial_extent["miny"],
+                self.spatial_extent["maxx"],
+                self.spatial_extent["maxy"],
+            ]
+            self.collection.extent.spatial = pystac.SpatialExtent([bbox])
+
+        if self.temporal_extent["start"] and self.temporal_extent["end"]:
+            self.collection.extent.temporal = pystac.TemporalExtent(
+                [[self.temporal_extent["start"], self.temporal_extent["end"]]]
+            )
+        self.collection.description = collection_desc
+        try:
+            self.collection.validate()
+        except Exception as e:  # pragma: no cover
+            logger.error(f"Collection validation failed: {e}")
+
+    async def validate_stac(self) -> Tuple[int, int]:
+        """Validate STAC API availability and get result counts."""
+        self._set_catalogue_queries()
+        self.query["facet.field"] += ["time", "bbox"]
+        self.query["fl"] += ["time", "bbox"]
+        async with self._session_get() as res:
+            search_status, search = res
+        await self.stacapi_availability()
+        total_count = int(search.get("response", {}).get("numFound", 0))
+        return search_status, total_count
+
+    async def init_stac_collection(
+        self,
+        request: Request,
+        collection_id: str,
     ) -> None:
+        """
+        Initialize and populate a STAC collection from Databrowser search results.
+
+        Parameters
+        ----------
+        request : Request
+            FastAPI request object containing base URL and query parameters
+        collection_id : str
+            Unique identifier for the STAC collection
+
+        Returns
+        -------
+        Tuple[int, pystac.Collection]
+            Status code and created STAC collection
+        """
+        try:
+            self.assets_prereqs = {
+                "base_url": str(request.base_url),
+                "full_endpoint": f"{str(request.url)}?{str(request.query_params)}",
+                "only_params": str(request.query_params),
+            }
+
+            self.collection = await self._create_stac_collection(collection_id)
+            await self.ingest_stac_collection(self.collection)
+
+            async for item_batch in self._iter_stac_items():
+                await self.ingest_stac_item(item_batch)
+
+            self.finalize_stac_collection()
+            await self.update_stac_collection(self.collection)
+
+        except Exception as e:  # pragma: no cover
+            logger.error(
+                f"STAC collection creation failed for {collection_id}: {str(e)}"
+            )
+
+    async def ingest_stac_item(self, items: list[pystac.Item]) -> None:
+        """
+        Ingest bulk STAC Items into the catalog via API.
+
+        Parameters
+        ----------
+        items: list[pystac.Item]
+            List of STAC Items to be ingested using upsert method.
+
+        Raises
+        ------
+        HTTPException
+            If ingestion fails or server returns non-201 status.
+        """
+        url = self._config.get_stac_url("items", items[0].collection_id)
+        items_dict = {
+            "items": {item.id: item.to_dict() for item in items},
+            "method": "upsert",
+        }
+        async with self._session_post(url, items_dict):
+            pass
+
+    async def ingest_stac_collection(self, collection: pystac.Collection) -> None:
+        """
+        Ingest a STAC Collection into the STAC-API Catalog.
+
+        Parameters
+        ----------
+        collection: pystac.Collection
+            STAC Collection to be ingested.
+
+        Raises
+        ------
+        HTTPException
+            If ingestion fails or server returns non-201 status.
+        """
+        url = self._config.get_stac_url("collections")
+        async with self._session_post(url, collection.to_dict()):
+            pass
+
+    async def update_stac_collection(self, collection: pystac.Collection) -> None:
+        """
+        Update existing STAC Collection in the STAC_API Catalogue.
+
+        Parameters
+        ----------
+        collection: pystac.Collection
+            STAC Collection with updated data.
+
+        Raises
+        ------
+        HTTPException
+            If update fails or server returns non-200 status.
+        """
+        url = f"{self._config.get_stac_url('collections')}/{collection.id}"
+        async with self._session_put(url, collection.to_dict()):
+            pass
+
+    async def stacapi_availability(self) -> bool:
+        """
+        Check STAC API server availability via ping/pong endpoint.
+
+        Returns
+        -------
+        bool
+            True if server is available and returns 200 status.
+
+        Raises
+        ------
+        HTTPException
+            If server is unreachable or returns non-200 status.
+        """
+        original_url = getattr(self, "url", None)
+        self.url = self._config.get_stac_url("ping")
+        try:
+            async with self._session_get() as res:
+                return res[0] == 200
+        except Exception as error:
+            logger.error("STAC server connection failed: %s", error)
+            raise HTTPException(status_code=503, detail="STAC server unreachable")
+        finally:
+            self.url = original_url or ""
+
+    async def _delete_from_mongo(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Delete bulk user metadata from MongoDB based on the search keys.
 
@@ -740,10 +1308,6 @@ class Solr:
         search_keys: Dict[str, str]
             A dictionariy containing search keys used to identify
             data for deletion.
-
-        Returns
-        -------
-        None
         """
         try:
             query = {
@@ -755,9 +1319,7 @@ class Solr:
         except Exception as error:
             logger.warning("[MONGO] Could not remove metadata: %s", error)
 
-    async def _insert_to_mongo(
-        self, metadata_batch: List[Dict[str, Any]]
-    ) -> None:
+    async def _insert_to_mongo(self, metadata_batch: List[Dict[str, Any]]) -> None:
         """
         Bulk upsert user metadata into MongoDB.
 
@@ -765,10 +1327,6 @@ class Solr:
         ----------
         metadata_batch: List[Dict[str, Any]]
             A list of dictionaries containing metadata to insert into MongoDB.
-
-        Returns
-        -------
-        None
         """
         bulk_operations = []
 
@@ -776,17 +1334,13 @@ class Solr:
             filter_query = {"file": metadata["file"], "uri": metadata["uri"]}
             update_query = {"$set": metadata}
 
-            bulk_operations.append(
-                UpdateOne(filter_query, update_query, upsert=True)
-            )
+            bulk_operations.append(UpdateOne(filter_query, update_query, upsert=True))
         if bulk_operations:
             try:
-                result = (
-                    await self._config.mongo_collection_userdata.bulk_write(
-                        bulk_operations,
-                        ordered=False,
-                        bypass_document_validation=False,
-                    )
+                result = await self._config.mongo_collection_userdata.bulk_write(
+                    bulk_operations,
+                    ordered=False,
+                    bypass_document_validation=False,
                 )
                 successful_upsert = (
                     result.upserted_count
@@ -827,9 +1381,7 @@ class Solr:
                     nMatched,
                 )
             except Exception as error:
-                logger.exception(
-                    "[MONGO] Could not insert metadata: %s", error
-                )
+                logger.exception("[MONGO] Could not insert metadata: %s", error)
 
     @ensure_future
     async def store_results(self, num_results: int, status: int) -> None:
@@ -859,9 +1411,7 @@ class Solr:
         except Exception as error:
             logger.warning("Could not add stats to mongodb: %s", error)
 
-    def _process_catalogue_result(
-        self, out: Dict[str, List[Sized]]
-    ) -> Dict[str, Any]:
+    def _process_catalogue_result(self, out: Dict[str, List[Sized]]) -> Dict[str, Any]:
         return {
             k: (
                 out[k][0]
@@ -977,9 +1527,7 @@ class Solr:
             search_status, search = res
         return search_status, search.get("response", {}).get("numFound", 0)
 
-    def _join_facet_queries(
-        self, key: str, facets: List[str]
-    ) -> Tuple[str, str]:
+    def _join_facet_queries(self, key: str, facets: List[str]) -> Tuple[str, str]:
         """Create lucene search contain and NOT contain search queries"""
 
         negative, positive = [], []
@@ -1043,23 +1591,21 @@ class Solr:
         )
         return url
 
-    async def check_for_status(
-        self, response: aiohttp.client_reqrep.ClientResponse
-    ) -> None:
+    async def check_for_status(self, response: httpx.Response) -> None:
         """Check if a query was successful
 
         Parameters
         ----------
-        response: aiohttp.client_reqrep.ClientResponse
+        response: httpx.Response
             The response of the rest query.
 
         Raises
         ------
         fastapi.HTTPException: If anything went wrong an error is risen
         """
-        if response.status not in (200, 201):
+        if response.status_code not in (200, 201):
             raise HTTPException(
-                status_code=response.status, detail=response.text
+                status_code=response.status_code, detail=response.text
             )  # pragma: no cover
 
     async def _solr_page_response(self) -> AsyncIterator[Dict[str, Any]]:
@@ -1115,9 +1661,7 @@ class Solr:
                 cache = await create_redis_connection()
                 await cache.publish(
                     "data-portal",
-                    json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode(
-                        "utf-8"
-                    ),
+                    json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode("utf-8"),
                 )
             except Exception as error:
                 logger.error("Cloud not connect to redis: %s", error)
@@ -1130,9 +1674,7 @@ class Solr:
                     suffix = ","
                 else:
                     suffix = ""
-                output = json.dumps(
-                    self._process_catalogue_result(result), indent=3
-                )
+                output = json.dumps(self._process_catalogue_result(result), indent=3)
                 prefix = "   "
             num += 1
             yield f"{prefix}{output}{suffix}\n"
@@ -1159,14 +1701,11 @@ class Solr:
         """
 
         for metadata in metadata_batch:
-            self.payload = [metadata]
-            async with self._session_post() as (status, _):
+            async with self._session_post(self._post_url, [metadata]) as (status, _):
                 if status == 200:
                     self.total_ingested_files += 1
 
-    async def _delete_from_solr(
-        self, search_keys: Dict[str, Union[str, int]]
-    ) -> None:
+    async def _delete_from_solr(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Delete user data from Apache Solr based on search keys.
 
@@ -1197,13 +1736,10 @@ class Solr:
                 escaped_value = escape_special_chars(str(value).lower())
                 query_parts.append(f"{key_lower}:{escaped_value}")
         query_str = " AND ".join(query_parts)
-        self.payload = {"delete": {"query": query_str}}
-        async with self._session_post():
+        async with self._session_post(self._post_url, {"delete": {"query": query_str}}):
             pass
 
-    async def _ingest_user_metadata(
-        self, user_metadata: List[Dict[str, Any]]
-    ) -> None:
+    async def _ingest_user_metadata(self, user_metadata: List[Dict[str, Any]]) -> None:
         """
         Ingest validated user metadata.
 
@@ -1220,7 +1756,7 @@ class Solr:
             {**metadata, **self.fwrites} for metadata in user_metadata
         ]
         for i in range(0, len(processed_metadata), self.batch_size):
-            batch = processed_metadata[i:i + self.batch_size]
+            batch = processed_metadata[i: i + self.batch_size]
             processed_batch = await self._process_metadata(batch)
             self.total_duplicated_files += len(batch) - len(processed_batch)
             if processed_batch:
@@ -1239,18 +1775,12 @@ class Solr:
 
             if not uri and not file_path:
                 continue
-            is_duplicate = await self._is_query_duplicate(
-                str(uri), str(file_path)
-            )
+            is_duplicate = await self._is_query_duplicate(str(uri), str(file_path))
             if not is_duplicate:
                 new_querie.append(metadata)
-        return [
-            dict(t) for t in {tuple(sorted(d.items())) for d in new_querie}
-        ]
+        return [dict(t) for t in {tuple(sorted(d.items())) for d in new_querie}]
 
-    async def _purge_user_data(
-        self, search_keys: Dict[str, Union[str, int]]
-    ) -> None:
+    async def _purge_user_data(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Purge the user data from both the Apache Solr search system and MongoDB.
 
@@ -1369,6 +1899,4 @@ class Solr:
         """
         search_keys["user"] = user_name
         await self._purge_user_data(search_keys)
-        logger.info(
-            "Deleted files from Solr and MongoDB with keys: %s", search_keys
-        )
+        logger.info("Deleted files from Solr and MongoDB with keys: %s", search_keys)

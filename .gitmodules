@@ -1,3 +1,4 @@
 [submodule "dev-env/config"]
 	path = dev-env/config
 	url = https://github.com/FREVA-CLINT/freva-service-config.git
+	branch = add-bbox

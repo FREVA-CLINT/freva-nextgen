@@ -238,6 +238,32 @@ file or pipe the catalogue to stdout (default). Just like for the ``data-search`
 sub command you can instruct the system to create zarr file streams to access
 the data via zarr.
 
+
+Creating STAC Collections
+--------------------------
+The ``stac-collection`` sub command allows you to create a dynamic `STAC (SpatioTemporal Asset Catalog) collection <https://stacspec.org/en/about/stac-spec/>_ `
+from the current search. This can be useful for sharing standardized geospatial
+data catalogs and enabling interoperability between different data systems.
+
+.. code:: console
+
+    freva-client databrowser stac-collection --help
+
+.. execute_code::
+   :hide_code:
+
+   from subprocess import run, PIPE
+
+   res = run(["freva-client", "databrowser", "stac-collection", "--help"], check=True, stdout=PIPE, stderr=PIPE)
+   print(res.stdout.decode())
+
+The STAC collection provides multiple ways to access and interact with the data:
+ - Access your climate data through the intake-esm data catalog specification
+ - Download and access search results as Zarr files, available as STAC Assets at both collection and item levels
+ - Browse and explore your search results directly through the Freva DataBrowser web interface
+Each of these access methods is encoded as STAC Assets, making them easily discoverable and accessible through any STAC-compatible tool.
+
+
 Query the number of occurrences
 -------------------------------
 In some cases it might be useful to know how many files are found in the

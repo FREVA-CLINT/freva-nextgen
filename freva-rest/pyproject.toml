@@ -41,6 +41,8 @@ dependencies = [
 "uuid",
 "typing_extensions",
 "zarr",
+"pystac",
+"httpx",
 ]
 [project.scripts]
 freva-rest-server = "freva_rest.cli:cli"

@@ -42,7 +42,7 @@ def check_container(image_name: str = "freva-rest", container_name: str = "freva
             stdout, stderr = process.communicate()
             raise RuntimeError(f"Container died. Exit code: {process.returncode}. "
                              f"Stdout: {stdout}, Stderr: {stderr}")
-        
+
         logger.info("Container started successfully.")
     except Exception as error:
         logger.critical("Starting the container failed: %s", error)
@@ -63,7 +63,7 @@ def check_container(image_name: str = "freva-rest", container_name: str = "freva
                 stderr=subprocess.PIPE
             )
             stop_process.wait(timeout=15)
-            
+
             logger.info(f"Removing container {container_name}")
             rm_process = subprocess.Popen(
                 ["docker", "rm", container_name],
@@ -71,7 +71,7 @@ def check_container(image_name: str = "freva-rest", container_name: str = "freva
                 stderr=subprocess.PIPE
             )
             rm_process.wait(timeout=10)
-            
+
             logger.info("Container cleanup completed successfully")
         except Exception as cleanup_error:
             logger.error("Failed to clean up container: %s", cleanup_error)

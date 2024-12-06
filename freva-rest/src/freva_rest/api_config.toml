@@ -112,3 +112,28 @@ client_id = "freva"
 # Secret key associated with the client ID. Keep this secure as it is used to
 # authenticate the API to the OIDC provider.
 client_secret = ""
+
+[stacapi]
+# STAC API configuration for accessing SpatioTemporal Asset Catalogs (STAC).
+# This section defines settings for connecting to a STAC API, allowing the API
+# to query and retrieve metadata from STAC-compliant catalogs.
+
+# Hostname where the STAC API server is running.
+hostname = "localhost"
+
+# Port on which the STAC API listens for HTTP requests.
+port = 8083
+
+# Username for authenticating with the STAC API server for
+# Transactional extension
+username = "stac"
+
+# Password associated with the STAC API server for authentication.
+password = "secret"
+
+[stacbrowser]
+# STAC Browser configuration for browsing SpatioTemporal Asset Catalogs (STAC).
+# This section defines settings for connecting to a STAC Browser, allowing the API
+# to query and retrieve metadata from STAC-compliant catalogs.
+hostname = "localhost"
+port = 8085

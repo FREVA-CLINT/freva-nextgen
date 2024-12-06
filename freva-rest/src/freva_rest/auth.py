@@ -76,9 +76,7 @@ async def userinfo(
                 response.raise_for_status()
                 token_data = await response.json()
                 return UserInfo(
-                    **get_userinfo(
-                        {k.lower(): str(v) for (k, v) in token_data.items()}
-                    )
+                    **get_userinfo({k.lower(): str(v) for (k, v) in token_data.items()})
                 )
         except Exception as error:
             logger.error(error)

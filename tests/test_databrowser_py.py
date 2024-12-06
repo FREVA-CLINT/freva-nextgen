@@ -8,7 +8,7 @@ import pytest
 from freva_client import databrowser
 from freva_client.auth import Auth, authenticate
 from freva_client.utils.logger import DatabrowserWarning
-
+import mock
 
 def test_search_files(test_server: str) -> None:
     """Test searching for files."""
@@ -133,6 +133,11 @@ def test_intake_without_zarr(test_server: str) -> None:
     with pytest.raises(ValueError):
         db.intake_catalogue()
 
+def test_stac_collection(test_server: str) -> None:
+    """Test the intake catalogue creation."""
+    db = databrowser(host=test_server, dataset="cmip6-fs")
+    res = db.stac_collection()
+    assert "STAC catalog creation initiated successfully" in res["status"]
 
 def test_intake_with_zarr(test_server: str, auth_instance: Auth) -> None:
     """Test the intake zarr catalogue creation."""

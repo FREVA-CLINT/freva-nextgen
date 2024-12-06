@@ -541,6 +541,150 @@ Searching for metadata
 
 ---
 
+.. _databrowser-api-stac:
+
+Generating a STAC collection
+-----------------------------
+
+.. http:get:: /api/freva-nextgen/databrowser/stac-collection/(str:flavour)/(str:uniq_key)
+
+    This endpoint transforms Freva databrowser search results into a dynamic STAC (SpatioTemporal Asset Catalog) Collection. STAC is an open standard for geospatial data cataloguing, enabling consistent discovery and access of climate datasets, satellite imagery and spatiotemporal data. It provides a common language for describing geospatial information and related metadata.
+
+    :param flavour: The Data Reference Syntax (DRS) standard specifying the
+                    type of climate datasets to query. The available
+                    DRS standards can be retrieved using the
+                    ``GET /api/datasets/overview`` method.
+    :type flavour: str
+    :param uniq_key: The type of search result, which can be either "file" or
+                    "uri". This parameter determines whether the search
+                    will be based on file paths or Uniform Resource
+                    Identifiers (URIs).
+    :type uniq_key: str
+    :query start: Specify the starting point for receiving search results.
+                 Default is 0.
+    :type start: int
+    :query max-results: Raise an Error if more results are found than that
+                       number, -1 for do not raise at all.
+    :type max-results: int
+    :query multi-version: Use versioned datasets for querying instead of the
+                         latest datasets. Default is false.
+    :type multi-version: bool
+    :query translate: Translate the metadata output to the required DRS flavour.
+                     Default is true.
+    :type translate: bool
+    :query \**search_facets: With any other query parameters you refine your
+                            data search. Query parameters could be, depending
+                            on the DRS standard flavour ``product``, ``project``
+                            ``model`` etc.
+    :type \**search_facets: str, list[str]
+
+    :statuscode 200: STAC collection creation initiated successfully
+    :statuscode 404: no entries found for this query
+    :statuscode 413: result stream too big
+    :statuscode 422: invalid flavour or search keys
+    :statuscode 500: internal server error
+    :statuscode 503: search backend error
+    :resheader Content-Type: ``application/json``: creation status and collection link
+
+    Example Request
+    ~~~~~~~~~~~~~~~~
+
+    Here's an example of how to use this endpoint with additional parameters.
+    In this example, we want to create a STAC collection that follows the
+    `freva` DRS standard and points to data files rather than URIs.
+    We're specifically looking for datasets from the ``EUR-11`` ``product``.
+
+    .. sourcecode:: http
+
+        GET /api/freva-nextgen/databrowser/stac-collection/freva/file?product=EUR-11 HTTP/1.1
+        Host: www.freva.dkrz.de
+
+    Example Response
+    ~~~~~~~~~~~~~~~~~
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "status": "STAC catalog creation initiated successfully. To see the collection, use this link: https://www.freva.dkrz.de/stac/freva-550e8400-e29b-41d4-a716-446655440000"
+        }
+
+    Example
+    ~~~~~~~
+    Below you can find example usages of this request in different scripting and
+    programming languages.
+
+    .. tabs::
+
+        .. code-tab:: bash
+            :caption: Shell
+
+            curl -X GET \
+            'https://www.freva.dkrz.de/api/freva-nextgen/databrowser/stac-collection/freva/file?product=EUR-11'
+
+        .. code-tab:: python
+            :caption: Python
+
+            import requests
+
+            response = requests.get(
+                "https://www.freva.dkrz.de/api/freva-nextgen/databrowser/stac-collection/freva/file",
+                params={"product": "EUR-11"}
+            )
+            result = response.json()
+            collection_url = result["status"].split("use this link: ")[1]
+
+        .. code-tab:: r
+            :caption: gnuR
+
+            library(httr)
+            response <- GET(
+                "https://www.freva.dkrz.de/api/freva-nextgen/databrowser/stac-collection/freva/file",
+                query = list(product = "EUR-11")
+            )
+            result <- fromJSON(rawToChar(response$content))
+
+        .. code-tab:: julia
+            :caption: Julia
+
+            using HTTP
+            using JSON
+
+            response = HTTP.get(
+                "https://www.freva.dkrz.de/api/freva-nextgen/databrowser/stac-collection/freva/file",
+                query = Dict("product" => "EUR-11")
+            )
+            result = JSON.parse(String(HTTP.body(response)))
+
+        .. code-tab:: c
+            :caption: C/C++
+
+            #include <stdio.h>
+            #include <curl/curl.h>
+
+            int main() {
+                CURL *curl;
+                CURLcode res;
+
+                curl = curl_easy_init();
+                if (curl) {
+                    char url[] = "https://www.freva.dkrz.de/api/freva-nextgen/databrowser/stac-collection/freva/file?product=EUR-11";
+                    curl_easy_setopt(curl, CURLOPT_URL, url);
+
+                    res = curl_easy_perform(curl);
+                    if (res != CURLE_OK) {
+                        printf("Error: %s\n", curl_easy_strerror(res));
+                    }
+
+                    curl_easy_cleanup(curl);
+                }
+                return 0;
+            }
+
+---
+
 .. _databrowser-api-intake:
 
 Generating an intake-esm catalogue
