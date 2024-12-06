@@ -119,7 +119,7 @@ jobs:
           context: freva-rest
           file: freva-rest/Dockerfile
           build-args: VERSION=${{ needs.release-type-determination.outputs.tag }}
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64
           push: true
           tags: |
             ghcr.io/freva-clint/freva-rest-api:${{ needs.release-type-determination.outputs.tag }}

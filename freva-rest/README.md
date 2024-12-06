@@ -43,6 +43,18 @@ docker pull ghcr.io/freva-clint/freva-rest:latest
 By default the container starts with the ``freva-rest-service`` command.
 See the `freva-rest-server --help` command for configure options.
 
+### Service Startup Options
+
+The container supports several startup modes on `AMD64` and `ARM64`:
+
+```console
+# Default mode - starts the freva-rest service
+docker run ghcr.io/freva-clint/freva-rest:latest
+
+# Start with custom freva-rest flags
+docker run ghcr.io/freva-clint/freva-rest:latest -p 8000
+```
+
 You can adjust the server settings by either overriding the default flags or 
 setting environment variables in the container.
 
@@ -51,6 +63,7 @@ setting environment variables in the container.
 ```ini
 # Server Configuration
 DEBUG=0                  # Start server in debug mode (1), (default: 0 -> no debug)
+API_URL=localhost:7777
 API_PORT=7777            # The port the rest service should be running on
 API_WORKER=8            # Number of multi-process workers serving the API
 API_PROXY=http://www.example.de/
@@ -60,7 +73,6 @@ API_CACHE_EXP=3600      # Expiry time in seconds of the cached data
 API_MONGO_USER=mongo
 API_MONGO_PASSWORD=secret
 API_MONGO_DB=search_stats
-API_MONGO_INITDB_DATABASE=search_stats
 API_MONGO_HOST=localhost:27017  # Host name and port should be separated by ":"
 
 # Solr Configuration
@@ -75,14 +87,14 @@ API_REDIS_SSL_CERTFILE=/certs/client-cert.pem
 API_REDIS_SSL_KEYFILE=/certs/client-key.pem
 
 # OIDC Configuration
-API_OIDC_URL=http://keycloak:8080/realms/freva/.well-known/openid-configuration
+API_OIDC_DISCOVERY_URL=http://keycloak:8080/realms/freva/.well-known/openid-configuration
 API_OIDC_CLIENT_ID=freva     #Name of the client (app) that is used to create the access tokens, defaults to freva
 API_OIDC_CLIENT_SECRET=      # Optional: Set if your OIDC instance uses a client secret
 
 # Service activation flags
 # Set to 1 to enable, 0 to disable the service
-USE_MONGODB=1  # Controls MongoDB initialization
-USE_SOLR=1     # Controls Apache Solr initialization
+USE_MONGODB=0  # Controls MongoDB initialization
+USE_SOLR=0     # Controls Apache Solr initialization
 ```
 
 ### Required Volumes
@@ -91,7 +103,7 @@ The container requires several persistent volumes that should be mounted:
 ```console
 docker run -d \
   --name freva-rest \
-  -e {mentioned envs above} \
+  -e {above envs} \ # or after saving them in .env file, call them via `--env-file .env`
   -v $(pwd)/mongodb_data:/data/db \
   -v $(pwd)/solr_data:/var/solr \
   -v $(pwd)/certs:/certs:ro \
@@ -110,4 +122,4 @@ mkdir -p {mongodb_data,solr_data,certs}
 > [!NOTE]
 > You can override the path to the default config file using the ``API_CONFIG``
          environment variable. The default location of this config file is
-         ``/opt/databrowser/api_config.toml``.
+         ``/opt/freva-rest/api_config.toml`` inside of container.
