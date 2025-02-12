@@ -69,6 +69,8 @@ class Completer:
             time=None,
             host=None,
             time_select="flexible",
+            bbox=None,
+            bbox_select="flexible",
             multiversion=False,
             extended_search=True,
             fail_on_error=False,

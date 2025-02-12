@@ -40,7 +40,9 @@ dependencies = [
 "watchfiles",
 "uuid",
 "typing_extensions",
-"zarr",
+"zarr<3",
+"pystac",
+"httpx",
 ]
 [project.scripts]
 freva-rest-server = "freva_rest.cli:cli"

@@ -33,7 +33,7 @@ jobs:
           else
             echo "This is not a pre-release tag."
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
-          fi  
+          fi
   tests:
     uses: ./.github/workflows/ci_job.yml
 

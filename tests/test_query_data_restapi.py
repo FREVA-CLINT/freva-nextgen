@@ -98,6 +98,24 @@ def test_time_selection(test_server: str) -> None:
     )
     assert res3.status_code == 500
 
+def test_bbox_selection(test_server: str) -> None:
+    """Test the bbox select functionality of the API."""
+    res1 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-10,10 by -10,10"},
+    )
+    assert len(res1.text.split()) == 61
+    res2 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-10,10 by -10,10", "bbox_select": "foo"},
+    )
+    assert res2.status_code == 500
+    res3 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "fx"},
+    )
+    assert res3.status_code == 500
+
 
 def test_primary_facets(test_server: str) -> None:
     """Test the functionality of primary facet definitions."""
@@ -249,6 +267,60 @@ def test_intake_search(test_server: str) -> None:
     assert res4.status_code == 413
 
 
+def test_stac_catalogue(test_server: str) -> None:
+    """Test the creation of STAC Catalogue."""
+    # 303 redirect means 200 OK from freva-rest api endpoint
+    res = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={
+            "activity_id": "cmip", 
+            "multi-version": True, 
+            "stac_dynamic": True
+        },
+        allow_redirects=False
+    )
+    
+    assert res.status_code == 303
+
+    assert 'Location' in res.headers
+    redirect_url = res.headers['Location']
+    assert redirect_url.startswith(('http://', 'https://'))
+    assert '/collections/' in redirect_url
+
+    # 413 Request Entity Too Large
+    res3 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"activity_id": "cmip", "multi-version": False, "max-results": 1},
+    )
+    assert res3.status_code == 413
+    # 422 Unprocessable Entity
+    res4 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"collection": "cmip2", "multi-version": False},
+    )
+    assert res4.status_code == 422
+    # 404 Not Found
+    res5 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"activity_id": "cmip3", "multi-version": False},
+    )
+    assert res5.status_code == 404
+    # 500 Internal Server Error, no crendentials or server is no running
+    with mock.patch("freva_rest.rest.server_config.stacapi_host", "http://wrong:wrong@foo.bar:8083"), \
+         mock.patch("freva_rest.databrowser_api.core.Solr._session_get") as mock_get:
+        
+        # Mock connection failure
+        mock_get.return_value.__aenter__.side_effect = Exception("Connection failed")
+        
+        res2 = requests.get(
+            f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+            params={
+                "activity_id": "cmip",
+                "multi-version": True,
+                "stac_dynamic": True
+            }
+        )
+        assert res2.status_code == 500
 def test_bad_intake_request(test_server: str) -> None:
     """Test for a wrong intake request."""
     res1 = requests.get(

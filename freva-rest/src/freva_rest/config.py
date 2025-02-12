@@ -16,6 +16,7 @@ from typing import (
     Dict,
     Iterator,
     List,
+    Literal,
     Optional,
     Set,
     Tuple,
@@ -44,9 +45,7 @@ class ServerConfig(BaseModel):
         Union[str, Path],
         Field(
             title="API Config",
-            description=(
-                "Path to a .toml file holding the API" "configuration"
-            ),
+            description=("Path to a .toml file holding the API" "configuration"),
         ),
     ] = os.getenv("API_CONFIG", Path(__file__).parent / "api_config.toml")
     proxy: Annotated[
@@ -109,9 +108,7 @@ class ServerConfig(BaseModel):
         str,
         Field(
             title="Cache expiration.",
-            description=(
-                "The expiration time in sec" "of the data loading cache."
-            ),
+            description=("The expiration time in sec" "of the data loading cache."),
         ),
     ] = os.getenv("API_CACHE_EXP", "")
     api_services: Annotated[
@@ -133,10 +130,7 @@ class ServerConfig(BaseModel):
         Field(
             title="Redis cert file.",
             description=(
-                "Path to the public"
-                "certfile to make"
-                "connections to the"
-                "cache"
+                "Path to the public" "certfile to make" "connections to the" "cache"
             ),
         ),
     ] = os.getenv("API_REDIS_SSL_CERTFILE", "")
@@ -145,10 +139,7 @@ class ServerConfig(BaseModel):
         Field(
             title="Redis key file.",
             description=(
-                "Path to the privat"
-                "key file to make"
-                "connections to the"
-                "cache"
+                "Path to the privat" "key file to make" "connections to the" "cache"
             ),
         ),
     ] = os.getenv("API_REDIS_SSL_KEYFILE", "")
@@ -187,6 +178,26 @@ class ServerConfig(BaseModel):
             description="The OIDC client secret, if any, used for authentication.",
         ),
     ] = os.getenv("API_OIDC_CLIENT_SECRET", "")
+    stacapi_host: Annotated[
+        str,
+        Field(
+            title="STAC host",
+            description=(
+                "Set the <USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<ROO_PATH> "
+                "to the STAC service."
+            ),
+        ),
+    ] = os.getenv("API_STAC_HOST", "")
+    stacbrowser_host: Annotated[
+        str,
+        Field(
+            title="STAC browser host",
+            description=(
+                "Set the <HOSTNAME>:<PORT>/<PREFIX> tp the STAC "
+                "browser service."
+            ),
+        ),
+    ] = os.getenv("API_STACBROWSER_HOST", "")
 
     def _read_config(self, section: str, key: str) -> Any:
         fallback = self._fallback_config[section][key] or None
@@ -227,19 +238,13 @@ class ServerConfig(BaseModel):
         self.oidc_client_id = self.oidc_client_id or self._read_config(
             "oidc", "client_id"
         )
-        self.mongo_host = self.mongo_host or self._read_config(
-            "mongo_db", "hostname"
-        )
-        self.mongo_user = self.mongo_user or self._read_config(
-            "mongo_db", "user"
-        )
+        self.mongo_host = self.mongo_host or self._read_config("mongo_db", "hostname")
+        self.mongo_user = self.mongo_user or self._read_config("mongo_db", "user")
         self.mongo_password = self.mongo_password or self._read_config(
             "mongo_db", "password"
         )
         self.mongo_db = self.mongo_db or self._read_config("mongo_db", "name")
-        self.solr_host = self.solr_host or self._read_config(
-            "solr", "hostname"
-        )
+        self.solr_host = self.solr_host or self._read_config("solr", "hostname")
         self.solr_core = self.solr_core or self._read_config("solr", "core")
         self.redis_user = self.redis_user or self._read_config("cache", "user")
         self.redis_password = self.redis_password or self._read_config(
@@ -252,8 +257,11 @@ class ServerConfig(BaseModel):
         self.redis_ssl_certfile = self.redis_ssl_certfile or self._read_config(
             "cache", "cert_file"
         )
-        self.redis_host = self.redis_host or self._read_config(
-            "cache", "hostname"
+        self.redis_host = self.redis_host or self._read_config("cache", "hostname")
+        self.stacapi_host = self.stacapi_host or \
+            self._read_config("stac", "api_hostname")
+        self.stacbrowser_host = self.stacbrowser_host or self._read_config(
+            "stac", "browser_hostname"
         )
 
     @staticmethod
@@ -270,9 +278,7 @@ class ServerConfig(BaseModel):
     @property
     def services(self) -> Set[str]:
         """Define the services that are served."""
-        return set(
-            s.strip() for s in self.api_services.split(",") if s.strip()
-        )
+        return set(s.strip() for s in self.api_services.split(",") if s.strip())
 
     @property
     def redis_url(self) -> str:
@@ -391,10 +397,43 @@ class ServerConfig(BaseModel):
                     "name"
                 ] not in ("file_name", "file", "file_no_version"):
                     yield entry["name"]
-        except (
-            requests.exceptions.ConnectionError
-        ) as error:  # pragma: no cover
-            logger.error(
-                "Connection to %s failed: %s", url, error
-            )  # pragma: no cover
+        except requests.exceptions.ConnectionError as error:  # pragma: no cover
+            logger.error("Connection to %s failed: %s", url, error)  # pragma: no cover
             yield ""  # pragma: no cover
+
+    def get_stacapi_url(
+        self,
+        spec: Literal["collections", "items", "ping"],
+        collection: Optional[str] = None,
+    ) -> str:
+        """Get the url of the STAC for transaction.
+
+        Parameters:
+        -----------
+            spec: Literal["collections", "items", "ping"]: Spec type
+            collection: Optional collection name, required for "items" spec
+
+        Returns:
+        --------
+            Complete STAC URL as string
+        """
+        if not self.stacapi_host:
+            raise ValueError(
+                "Missing STAC API host configuration. "
+                "Please provide it either in config "
+                "or environment variable (API_STAC_HOST)"
+            )
+
+        base_url = self.stacapi_host.rstrip('/')
+
+        if spec == "collections":
+            return f"{base_url}/{spec}"
+        if spec == "items":
+            logger.debug("Collection: %s", collection)
+            if collection is None:
+                raise ValueError(
+                    "Collection name is required for 'items' spec"
+                )  # pragma: no cover
+            return f"{base_url}/collections/{collection}/bulk_items"
+        if spec == "ping":
+            return f"{base_url}/_mgmt/{spec}"

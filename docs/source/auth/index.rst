@@ -21,8 +21,8 @@ system:
 Using the restAPI endpoints
 ---------------------------
 The API supports token-based authentication using OAuth2. To obtain an access
-token, clients can use the ``/api/freva-nextgen/auth/v2/token`` endpoint by 
-providing valid username and password credentials. The access token should 
+token, clients can use the ``/api/freva-nextgen/auth/v2/token`` endpoint by
+providing valid username and password credentials. The access token should
 then be included in the authorization header for secured endpoints.
 
 .. http:post:: /api/freva-nextgen/auth/v2/token
