@@ -29,3 +29,35 @@ key_file = ""
 discovery_url = "http://localhost:8080/realms/freva/.well-known/openid-configuration"
 client_id = "freva"
 client_secret = ""
+
+
+
+## OpenSearch Configuration
+
+# [secondary-backend]
+
+# type = "SE"  # or "opensearch" or "postgres"
+# dns = "http://localhost:9203/items_*"
+# # Note: table and pagination_column are not required for SE backends
+
+# [secondary-backend.lookuptable]
+# project = "collection.keyword"
+# product = "properties.product.keyword"
+# institute = "properties.institute.keyword"
+# experiment = "properties.experiment.keyword"
+# time_min = "properties.start_datetime"
+# time_max = "properties.end_datetime"
+# variables = "properties.cube:variables"
+# file = "assets.data.href"
+# uri = "assets.data.href"
+
+# [secondary-backend.lookuptable.defaults]
+# project = "freva"
+# product = "freva"
+# institute = "JSC"
+# experiment = "STACBackendadoptation"
+# time_min = "1900-01-01T00:00:00Z"
+# time_max = "2100-12-31T23:59:59Z"
+# variables = "variable1"
+# file = "file"
+# uri = "uri"

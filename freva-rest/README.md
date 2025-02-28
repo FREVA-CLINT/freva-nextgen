@@ -39,6 +39,32 @@ cd freva-rest
 python -m pip install -e .
 ```
 
+## Secondary Backends
+
+Freva supports connecting to secondary backends for enhanced data management and search capabilities:
+
+- RDBMS Backends: Connect to PostgreSQL and other relational databases (e.g., pgSTAC and MySQL)
+- Search Engine Backends: Connect to Elasticsearch or OpenSearch
+
+To enable a secondary backend, uncomment and configure the appropriate section in your `api_config.toml` file:
+
+```toml
+[secondary-backend]
+type = "RDBMS" # Use "RDBMS" for relational databases or "SE" for search engines
+dns = "postgresql+asyncpg://user:password@localhost:5432/database"
+table = "table_name" # For RDBMS backends
+pagination_column = "id" # Column used for pagination (in RDBMS)
+limit_offset = "LIMIT :limit OFFSET :offset" # limit and offset order (in RDBMS)
+
+[secondary-backend.lookuptable]
+# Configure field mappings between Freva search keys and backend fields
+project = "collection"
+product = "content->'properties'->>'product'"
+# Additional mappings as needed
+```
+
+Or set the environment variables which are mentioned in the **Available Environment Variables** section.
+
 ## Freva-rest production docker container
 It's best to use the system in production within a dedicated docker container.
 You can pull the container from the GitHub container registry:
@@ -110,6 +136,14 @@ MYSQL_USER=
 MYSQL_PASSWORD=
 MYSQL_ROOT_PASSWORD=
 MYSQL_DATABASE= # Database name for legacy freva
+
+# Secondary Backend Configuration
+API_SECONDARY_BACKEND_TYPE=      # Type of backend: "RDBMS" or "SE" (Search Engine)
+API_SECONDARY_BACKEND_DNS=       # Connection string for the backend
+API_SECONDARY_BACKEND_TABLE=     # Table name for RDBMS backends (default: pgstac.items)
+API_SECONDARY_BACKEND_PAGINATION_COLUMN= # Column used for pagination (default: id)
+API_SECONDARY_BACKEND_LIMIT_OFFSET=     # SQL pagination syntax (default: LIMIT :limit OFFSET :offset)
+API_SECONDARY_BACKEND_LOOKUPTABLE=      # JSON mapping between Freva and backend fields
 
 # Service activation flags
 # Set to 1 to enable, 0 to disable the service (default)

@@ -82,6 +82,36 @@ services:
     volumes:
       - ./config/mongo/mongo-userdata-init.js:/docker-entrypoint-initdb.d/mongo-userdata-init.js:ro
 
+  pgstac:
+    networks:
+      - freva-rest
+    image: ghcr.io/stac-utils/pgstac:latest
+    environment:
+      - POSTGRES_USER=pgstac
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=postgis
+      - PGUSER=pgstac
+      - PGPASSWORD=password
+      - PGDATABASE=postgis
+    ports:
+      - "5432:5432"
+
+  opensearch:
+    networks:
+      - freva-rest
+    container_name: os-container
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION:-2.11.1}
+    hostname: opensearch
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ./config/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
+    ports:
+      - "9203:9202"
+
+
 networks:
   freva-rest:
     driver: bridge

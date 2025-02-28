@@ -35,6 +35,9 @@ from freva_rest import __version__
 from freva_rest.config import ServerConfig
 from freva_rest.logger import logger
 from freva_rest.utils import create_redis_connection
+from sqlalchemy.exc import SQLAlchemyError
+from functools import reduce
+
 
 FlavourType = Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"]
 IntakeType = TypedDict(
@@ -73,6 +76,72 @@ def ensure_future(
         return asyncio.ensure_future(async_func(*args, **kwargs))
 
     return wrapper
+
+
+
+def swap_my_back(desired_outputs: List[str]):
+    """Decorator that tries secondary backend first, with Solr as fallback.
+    This decorator has been created to handle the different RDBMS or SE backends
+    without cluttering the main codebase with different backends specific logic
+    and functions.
+    ACHTUNG: The side effect of this decorator is that when we change the name of
+    functions in the main codebase, we have to update the decorator as well manually.
+
+    Parameters
+    ----------
+    desired_outputs : List[str]
+        List of required outputs from the backend query
+
+    Returns
+    -------
+    Callable
+        Decorated function that handles secondary backend operations
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(self, *args, **kwargs):
+            if self.backend_type in ("RDBMS", "SE"):
+                start_method_key = 'offset' if self.backend_type == 'RDBMS' else 'from'
+                try:
+                    search_results = await self._query_translator_executor(
+                        unique_key=self.uniq_key,
+                        offset=self.secondary_backend_params.get(start_method_key, 0),
+                        last_id=self.query.get("last_id", None),
+                        limit=kwargs.get('max_results', 1),
+                        desired_output=desired_outputs
+                    )
+                    if func.__name__ == "init_intake_catalogue":
+                        facets = [
+                            self.translator.forward_lookup.get(v, v)
+                            for v in self.translator.facet_hierarchy
+                            if v in search_results.get("facets", {})
+                        ]
+                        catalogue = await self._create_intake_catalogue(*facets)
+                        return 200, IntakeCatalogue(
+                            catalogue=catalogue,
+                            total_count=search_results["total_count"]
+                        )
+                    if func.__name__ == "extended_search":
+                        search_results["search_results"] = [
+                            {k: v for k, v in result.items() if k != self.secondary_backend_pagination}
+                            for result in search_results.get("search_results", [])
+                        ]
+                        return 200, SearchResult(
+                            total_count=search_results["total_count"],
+                            facets=search_results.get("facets", {}),
+                            search_results=search_results.get("search_results", []),
+                            facet_mapping=search_results.get("facet_mapping", {}),
+                            primary_facets=self.translator.primary_keys
+                        )
+                    if func.__name__ == "init_stream":
+                        return 200, search_results["total_count"]
+
+                except Exception as e:
+                    logger.error(f"Secondary backend operation failed: %s", str(e))
+                    raise HTTPException(status_code=500, detail=str(e))
+            return await func(self, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 class SearchResult(BaseModel):
@@ -367,7 +436,7 @@ class Solr:
     start: int, default: 0
         Specify the starting point for receiving results.
     multi_version: bool, default: False
-        Use versioned datasets in stead of latest versions.
+        Use versioned datasets instead of latest versions.
     translate: bool, default: True
         Translate the output to the required DRS flavour.
 
@@ -419,6 +488,39 @@ class Solr:
         self.uniq_key = uniq_key
         self.multi_version = multi_version
         self.translator = _translator or Translator(flavour, translate)
+        self.facets = self.translator.translate_query(query, backwards=True)
+        ##################SECONDARY BACKEND CONFIGURATION##################
+        self.backend_type = self._config.secondary_backend_type or "solr"
+        
+        if self.backend_type in ('RDBMS', 'SE'):
+            self.secondary_backend_dns = self._config.secondary_backend_dns
+            # Determination of pagination is only necessary for the RDBMSs. 
+            # For SEs (ElasticSearch and OpenSearch), we use generic `search_after` 
+            # pagination.
+            self.secondary_backend_pagination = self._config.secondary_backend_pagination
+            # Since the order of limit and offset and even the syntax of limit and offset
+            # can vary from one database to another, we have to define a method to get the
+            # database-specific limit offset syntax.
+            self.secondary_backend_limit_offset = self._config.secondary_backend_limit_offset
+            # Achtung (Important): since in all other backends we have no more access to managed_schema of Solr, 
+            # follwoing list is replacement approach for using the _config._get_solr_fields method.
+            # The side effect would be, when we update the managed_schema of Solr we have to update
+            # self.only_allowed_fields manually as well.
+            self.only_allowed_fields = [
+                'cmor_table', 'experiment', 'ensemble', 'fs_type', 'grid_label',
+                'institute', 'model', 'project', 'product', 'realm', 'variable',
+                'time_aggregation', 'time_frequency', 'dataset', 'driving_model',
+                'format', 'grid_id', 'level_type', 'rcm_name', 'rcm_version', 'user'
+            ]
+            secondary_backend_config = self._config._config.get('secondary-backend', {})
+            lookuptable_config = secondary_backend_config.get('lookuptable', {})
+            start_method_key = 'offset' if self.backend_type == 'RDBMS' else 'from'
+            self.__dict__.update({
+                'secondary_backend_params': {start_method_key: start, 'limit': self.batch_size, 'table': secondary_backend_config.get('table')},
+                'secondary_backend_lookuptable': {k: v for k, v in lookuptable_config.items()
+                                        if k != 'defaults' and isinstance(v, str)},
+                'secondary_backend_lookuptable_defaults': lookuptable_config.get('defaults', {})
+            })
         try:
             self.time = self.adjust_time_string(
                 query.pop("time", [""])[0],
@@ -426,15 +528,17 @@ class Solr:
             )
         except ValueError as err:
             raise HTTPException(status_code=500, detail=str(err)) from err
-        self.facets = self.translator.translate_query(query, backwards=True)
-        self.url, self.query = self._get_url()
-        self.query["start"] = start
-        self.query["sort"] = "file desc"
-
-        self.payload: Union[
-            List[Dict[str, Union[str, List[str], Dict[str, str]]]],
-            Dict[str, Union[str, List[str], Dict[str, str]]],
-        ] = []
+        self.url, self.query = self._get_url_params()
+        try:
+            self.time = self.adjust_time_string(
+                query.pop("time", [""])[0],
+                query.pop("time_select", ["flexible"])[0],
+            )
+        except ValueError as err:
+            raise HTTPException(status_code=500, detail=str(err)) from err
+        ###############################################################
+        if self.backend_type == "solr":
+            self.query.update({"start": start, "sort": "file desc"})
         self.fwrites: Dict[str, str] = {}
         self.total_ingested_files = 0
         self.total_duplicated_files = 0
@@ -444,6 +548,240 @@ class Solr:
         # should be changed to cloud storage type. We need to find an approach
         # to determine the file system
         self.fs_type: str = "posix"
+
+
+
+    async def _query_translator_executor(
+            self,
+            unique_key: str,
+            offset: int,
+            last_id: str,
+            limit: int,
+            desired_output: Literal["total_count", "search_results", "extended_search_results", "facets"]
+        ) -> Dict[str, Any]:
+        """Execute a search query on the secondary backend with configurable output and pagination.
+
+        This method supports both RDBMS and Elasticsearch-like backends, handling different query structures
+        and result formats appropriately.
+
+        Args:
+            unique_key (str): Primary identifier field for the search results
+            offset (int): Number of results to skip (used in RDBMS pagination)
+            last_id (str): Last ID for cursor-based pagination
+            limit (int): Maximum number of results to return
+            desired_output (List[str]): List of required output components. Supported values:
+                - "total_count": Include total number of matching results
+                - "search_results": Include basic search results
+                - "extended_search_results": Include detailed search results with all fields
+                - "facets": Include faceted search counts
+                It has been designed to avoid unnecessary database queries and 
+                to allow for flexible output.
+
+        Returns:
+            Dict[str, Any]: Search results containing requested components:
+                {
+                    "total_count": int,
+                    "search_results": List[Dict[str, Any]],
+                    "facets": Dict[str, List[Union[str, int]]],
+                    "facet_mapping": Dict[str, str],
+                    "primary_facets": List[str]
+                }
+
+        Raises:
+            HTTPException: If database query fails or other search errors occur
+        """
+        results = {
+            "total_count": 0,
+            "search_results": [],
+            "facets": {},
+            "facet_mapping": {
+                k: self.translator.forward_lookup[k]
+                for k in self.secondary_backend_lookuptable.keys()
+                if k in self.translator.forward_lookup
+            },
+            "primary_facets": self.translator.primary_keys,
+        }
+
+        if self.backend_type == "RDBMS":
+            try:
+                self.secondary_backend_params.update({"offset": offset, "limit": limit})
+                _, self.query = self._get_url_params()
+                where_clause = self.query["where_clause"]
+                self.secondary_backend_params.update(self.query["params"])
+                async def execute_count_query():
+                    """Execute the count query."""
+                    query = f"SELECT COUNT(*) FROM {self.secondary_backend_params['table']} WHERE {where_clause}"
+                    async with self._config.session_query_rdbms(query, self.secondary_backend_params) as res:
+                        return res.scalar() or 0
+
+                async def execute_search_query() -> List[Dict[str, Any]]:
+                    """Execute the search query."""
+                    _, self.query = self._get_url_params()
+                    self.secondary_backend_params.update(self.query["params"])
+                    where_clause = self.query["where_clause"]
+                    if last_id:
+                        self.secondary_backend_params.update({"last_id": str(last_id)})
+                        where_clause = f"({where_clause}) AND {self.secondary_backend_pagination} < '{self.secondary_backend_params['last_id']}'"                        
+                    base_columns = [
+                        f"COALESCE({self.secondary_backend_lookuptable.get(unique_key)}, '{self.secondary_backend_lookuptable_defaults.get(unique_key, 'NULL')}')  as {unique_key}",
+                        f"COALESCE({self.secondary_backend_lookuptable.get('fs_type')}, '{self.secondary_backend_lookuptable_defaults.get('fs_type')}') as fs_type",
+                        "id"
+                    ]
+
+                    if "extended_search_results" in desired_output:
+                        additional_columns = [
+                            f"COALESCE({prop_name}, '{json.dumps(self.secondary_backend_lookuptable_defaults.get(field, 'NULL'))}') as {field}"
+                            for field, prop_name in self.secondary_backend_lookuptable.items()
+                            if field != unique_key
+                        ]
+                        selected_columns = base_columns + additional_columns
+                        column_names = [unique_key, "fs_type", "id"] + [
+                            field
+                            for field in self.secondary_backend_lookuptable.keys()
+                            if field != unique_key
+                        ]
+                    else:
+                        selected_columns = base_columns
+                    query = f"""
+                        SELECT
+                            {', '.join(selected_columns)}
+                        FROM {self.secondary_backend_params.get("table")}
+                        WHERE {where_clause}
+                        ORDER BY {self.secondary_backend_pagination} DESC
+                        {self.secondary_backend_limit_offset}
+                    """
+                    async with self._config.session_query_rdbms(query, self.secondary_backend_params) as res:
+                        result = res.fetchall()
+                    if "extended_search_results" in desired_output:
+                        return [dict(zip(column_names, row)) for row in result]
+                    return [
+                        {
+                            unique_key: row[0],
+                            "fs_type": 'posix' if row[1] is None else row[1],
+                            self.secondary_backend_pagination: row[2]
+                        }
+                        for row in result
+                    ]
+                async def execute_facets_query() -> Dict[str, List[Union[str, int]]]:
+                    """Execute facet count queries."""
+                    facets = {}
+                    translated_fields = self.translator.translate_facets(self.secondary_backend_lookuptable.keys())
+                    fields, prop_names = zip(*self.secondary_backend_lookuptable.items())
+
+                    for field, translated_field, prop_name in zip(fields, translated_fields, prop_names):
+                        if field not in self.only_allowed_fields:
+                            continue
+                        query = f"""
+                        SELECT {prop_name} as value, COUNT(*) as count
+                        FROM {self.secondary_backend_params.get("table")}
+                        WHERE {where_clause}
+                        AND {prop_name} IS NOT NULL
+                        GROUP BY {prop_name}
+                        """
+                        try:
+                            async with self._config.session_query_rdbms(query, self.secondary_backend_params) as res:
+                                facets[translated_field] = [
+                                    item for row in res.fetchall() 
+                                    for item in [str(row[0]), int(row[1])]
+                                    if row[0]
+                                ]
+                        except SQLAlchemyError as e:
+                            logger.error("[RDBMS]: Couldn't get facets for %s: %s", translated_field, str(e))
+                            continue
+                    return facets
+
+                if "total_count" in desired_output:
+                    results["total_count"] = int(await execute_count_query())
+                
+                if "search_results" in desired_output or "extended_search_results" in desired_output:
+                    results["search_results"] = await execute_search_query()
+                
+                if "facets" in desired_output:
+                    results["facets"] = await execute_facets_query()
+                    
+                return results
+
+            except SQLAlchemyError as e:
+                logger.error("[RDBMS]: Database error during search: %s", str(e))
+                raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+            except Exception as e:
+                import traceback
+                logger.critical(traceback.format_exc())
+                logger.error("[RDBMS]: Search failed: %s", str(e))
+                raise HTTPException(status_code=500, detail=f"[RDBMS]: Search failed: {str(e)}")
+                
+        # non-RDBMS backend (e.g., Elasticsearch and OpenSearch)
+        try:
+            def get_nested(dictionary, path):
+                """safely get nested dictionary value using dot notation"""
+                try:
+                    return reduce(lambda d, key: d.get(key, {}), path.split("."), dictionary)
+                except (AttributeError, TypeError):
+                    return None
+                    
+            if "total_count" in desired_output:
+                self.url, self.query = self._get_url_params()
+                self.url = self.url + "/_count"
+                self.query = {
+                    'source': json.dumps({"query": json.loads(self.query["source"])["query"]}),
+                    'source_content_type': 'application/json'
+                }
+                async with self._session_get() as res:
+                    _, response_count = res
+                results["total_count"] = response_count["count"]
+                
+            if {"search_results", "extended_search_results", "facets"} & set(desired_output):
+                self.url, self.query = self._get_url_params()
+                query_body = json.loads(self.query["source"])
+                query_body.update({"size": limit})
+
+                if last_id:
+                    query_body.update({"search_after": [last_id], "from": 0})
+                else:
+                    query_body.update({"from": self.secondary_backend_params.get("from", 0)})
+                self.query["source"] = json.dumps(query_body)
+                self.url = self.url + "/_search"
+
+                async with self._session_get() as res:
+                    _, response = res
+                logger.critical(response)
+                if "extended_search_results" in desired_output:
+                    results["search_results"] = [
+                        {
+                            field: get_nested(hit, f"_source.{self.secondary_backend_lookuptable[field]}")
+                            for field in self.secondary_backend_lookuptable.keys()
+                            if field != unique_key
+                        } | {
+                            unique_key: get_nested(hit, f"_source.{self.secondary_backend_lookuptable[unique_key]}"),
+                            "fs_type": get_nested(hit, f"_source.{self.secondary_backend_lookuptable.get('fs_type')}") or "posix",
+                            "sort": hit.get("sort", [None])[0]
+                        }
+                        for hit in response["hits"]["hits"]
+                    ]
+                elif "search_results" in desired_output:
+                    results["search_results"] = [
+                        {
+                            unique_key: get_nested(hit, f"_source.{self.secondary_backend_lookuptable[unique_key]}"),
+                            "fs_type": get_nested(hit, f"_source.{self.secondary_backend_lookuptable.get('fs_type')}") or "posix",
+                            "sort": hit.get("sort", [None])[0]
+                        }
+                        for hit in response["hits"]["hits"]
+                    ]
+                if "facets" in desired_output and "aggregations" in response:
+                    for field in self.only_allowed_fields:
+                        if field in self.secondary_backend_lookuptable:
+                            translated_field = self.translator.translate_facets([field])[0]
+                            if f"facet_{field}" in response["aggregations"]:
+                                buckets = response["aggregations"][f"facet_{field}"]["buckets"]
+                                results["facets"][translated_field] = [
+                                    item for bucket in buckets if bucket["key"]
+                                    for item in [str(bucket["key"]), int(bucket["doc_count"])]
+                                ]
+            return results
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"[SE]: Search failed: {str(e)}")
+
 
     async def _is_query_duplicate(self, uri: str, file_path: str) -> bool:
         """
@@ -548,7 +886,7 @@ class Solr:
                 logger.error("Connection to %s failed: %s", self.url, error)
                 raise HTTPException(
                     status_code=503,
-                    detail="Could not connect to Solr POST endpoint",
+                    detail="Could not connect to Backend POST endpoint",
                 )
         yield res.status, response_data
 
@@ -609,8 +947,9 @@ class Solr:
             **query,
         )
 
-    @staticmethod
+
     def adjust_time_string(
+        self,
         time: str,
         time_select: str = "flexible",
     ) -> List[str]:
@@ -655,14 +994,74 @@ class Solr:
             raise ValueError(f"Choose `time_select` from {methods}") from exc
         start, _, end = time.lower().partition("to")
         try:
-            start = parse(
-                start or "1", default=datetime(1, 1, 1, 0, 0, 0)
-            ).isoformat()
-            end = parse(
-                end or "9999", default=datetime(9999, 12, 31, 23, 59, 59)
-            ).isoformat()
+            start_dt = parse(start or "1", default=datetime(1, 1, 1, 0, 0, 0))
+            end_dt = parse(end or "9999", default=datetime(9999, 12, 31, 23, 59, 59))
+            start = start_dt.isoformat()
+            end = end_dt.isoformat()
         except ParserError as exc:
             raise ValueError(exc) from exc
+        if self.backend_type == "RDBMS":
+            time_conditions = {
+                # Flexible: Returns records that overlap with the given time range
+                # i.e., record's time_max >= start_ts AND record's time_min <= end_ts
+                "flexible": f"""
+                    CAST({self.secondary_backend_lookuptable.get('time_max')} AS timestamp) >= CAST(:start_ts AS timestamp) 
+                    AND CAST({self.secondary_backend_lookuptable.get('time_min')} AS timestamp) <= CAST(:end_ts AS timestamp)
+                """,
+                
+                # Strict: Returns records that completely contain the given time range
+                # i.e., record's time_min <= start_ts AND record's time_max >= end_ts
+                "strict": f"""
+                    CAST({self.secondary_backend_lookuptable.get('time_min')} AS timestamp) <= CAST(:start_ts AS timestamp) 
+                    AND CAST({self.secondary_backend_lookuptable.get('time_max')} AS timestamp) >= CAST(:end_ts AS timestamp)
+                """,
+                
+                # File: Returns records that are completely contained within the given time range
+                # i.e., record's time_min >= start_ts AND record's time_max <= end_ts
+                "file": f"""
+                    CAST({self.secondary_backend_lookuptable.get('time_min')} AS timestamp) >= CAST(:start_ts AS timestamp) 
+                    AND CAST({self.secondary_backend_lookuptable.get('time_max')} AS timestamp) <= CAST(:end_ts AS timestamp)
+                """
+            }
+            return time_conditions.get(time_select, time_conditions["flexible"]), {"start_ts": start_dt, "end_ts": end_dt}
+        # TODO: we need to change it based on start_datetime and end_datetime, since it's reading the time form start and end datetime
+        if self.backend_type == "SE":
+            time_min_field = self.secondary_backend_lookuptable.get('time_min')
+            time_max_field = self.secondary_backend_lookuptable.get('time_max')
+            
+            time_conditions = {
+                # Flexible: Returns records that overlap with the given time range
+                # i.e., record's time_max >= start AND record's time_min <= end
+                "flexible": {
+                    "bool": {
+                        "must": [
+                            {"range": {time_max_field: {"gte": start}}},
+                            {"range": {time_min_field: {"lte": end}}}
+                        ]
+                    }
+                },
+                # Strict: Returns records that completely contain the given time range
+                # i.e., record's time_min <= start AND record's time_max >= end
+                "strict": {
+                    "bool": {
+                        "must": [
+                            {"range": {time_min_field: {"lte": start}}},
+                            {"range": {time_max_field: {"gte": end}}}
+                        ]
+                    }
+                },
+                # File: Returns records that are completely contained within the given time range
+                # i.e., record's time_min >= start AND record's time_max <= end
+                "file": {
+                    "bool": {
+                        "must": [
+                            {"range": {time_min_field: {"gte": start}}},
+                            {"range": {time_max_field: {"lte": end}}}
+                        ]
+                    }
+                }
+            }
+            return time_conditions.get(time_select, time_conditions["flexible"])
         return [f"{{!field f=time op={solr_select}}}[{start} TO {end}]"]
 
     async def _create_intake_catalogue(self, *facets: str) -> IntakeType:
@@ -709,6 +1108,8 @@ class Solr:
         self.query["fl"] = [self.uniq_key] + self._config.solr_fields
         self.query["wt"] = "json"
 
+
+    @swap_my_back(desired_outputs=["total_count", "facets"])
     async def init_intake_catalogue(self) -> Tuple[int, IntakeCatalogue]:
         """Create an intake catalogue from the solr search."""
         self._set_catalogue_queries()
@@ -866,28 +1267,76 @@ class Solr:
         }
 
     async def _iterintake(self) -> AsyncIterator[str]:
+        """Iterator for catalogue entries supporting multiple backend types.
+        Handles three types of backends:
+        - RDBMS: Uses offset/limit pagination
+        - SE: Uses search_after pagination
+        - SOLR: Uses cursor-based pagination
+        """
         encoder = json.JSONEncoder(indent=3)
-        self.query["cursorMark"] = "*"
         init = True
         yield ',\n   "catalog_dict": '
-        while True:
-            async with self._session_get() as res:
-                _, results = res
-
-            for result in results.get("response", {}).get("docs", [{}]):
-                entry = self._process_catalogue_result(result)
-                if init is True:
-                    sep = "["
-                else:
-                    sep = ","
-                yield f"{sep}\n   "
-                init = False
-                for line in list(encoder.iterencode(entry)):
-                    yield line
-            next_cursor_mark = results.get("nextCursorMark", None)
-            if next_cursor_mark == self.query["cursorMark"] or not results:
-                break
-            self.query["cursorMark"] = next_cursor_mark
+        if self.backend_type in ["RDBMS", "SE"]:
+            last_id = None
+            while True:
+                try:
+                    start_method_key = 'offset' if self.backend_type == 'RDBMS' else 'from'
+                    params = {
+                        "unique_key": self.uniq_key,
+                        "limit": self.batch_size,
+                        "last_id": last_id,
+                        "offset": self.secondary_backend_params.get(start_method_key),
+                        "desired_output": ["extended_search_results"]
+                    }
+                    
+                    search_results = await self._query_translator_executor(**params)
+                    results = search_results["search_results"]
+                    
+                    if not results:
+                        break
+                        
+                    for idx, result_with_id_sort in enumerate(results):
+                        if self.backend_type == "SE" and idx == len(results) - 1:
+                            last_id = result_with_id_sort.get("sort")
+                        else:
+                            last_id = result_with_id_sort.get(self.secondary_backend_pagination)
+                        
+                        result = {k: v for k, v in result_with_id_sort.items() 
+                                if k not in [self.secondary_backend_pagination, "sort"]}
+                        
+                        separator = "[" if init else ","
+                        yield f"{separator}\n   "
+                        init = False
+                        
+                        entry = self._process_catalogue_result(result)
+                        for line in list(encoder.iterencode(entry)):
+                            yield line
+                    
+                    if len(results) < self.batch_size:
+                        break
+                except Exception as e:
+                    logger.error("Error streaming catalogue for %s backend: %s", 
+                            self.backend_type, str(e))
+                    break
+        if self.backend_type == "SOLR":
+            self.query["cursorMark"] = "*"
+            
+            while True:
+                async with self._session_get() as res:
+                    _, results = res
+                
+                for result in results.get("response", {}).get("docs", [{}]):
+                    entry = self._process_catalogue_result(result)
+                    separator = "[" if init else ","
+                    yield f"{separator}\n   "
+                    init = False
+                    for line in list(encoder.iterencode(entry)):
+                        yield line
+                        
+                next_cursor_mark = results.get("nextCursorMark", None)
+                if next_cursor_mark == self.query["cursorMark"] or not results:
+                    break
+                self.query["cursorMark"] = next_cursor_mark
 
     async def intake_catalogue(
         self, catalogue: IntakeType, header_only: bool = False
@@ -901,12 +1350,14 @@ class Solr:
                 yield line
             yield "\n   ]\n}"
 
+
+    @swap_my_back(desired_outputs=["search_results", "total_count", "facets"])
     async def extended_search(
         self,
         facets: List[str],
         max_results: int,
     ) -> Tuple[int, SearchResult]:
-        """Initialise the apache solr metadata search.
+        """Initialise the apache solr or secondary backend metadata search.
 
         Returns
         -------
@@ -957,8 +1408,10 @@ class Solr:
             primary_facets=self.translator.primary_keys,
         )
 
+
+    @swap_my_back(desired_outputs=["total_count"])
     async def init_stream(self) -> Tuple[int, int]:
-        """Initialise the apache solr search.
+        """Initialize search stream for either Solr or secondary backend.
 
         Returns
         -------
@@ -998,31 +1451,121 @@ class Solr:
             search_value_neg = search_value_neg.replace(char, "\\" + char)
         return search_value_pos, search_value_neg
 
-    def _get_url(self) -> tuple[str, Dict[str, Any]]:
-        """Get the url for the solr query."""
-        core = {
-            True: self._config.solr_cores[0],
-            False: self._config.solr_cores[-1],
-        }[self.multi_version]
-        url = f"{self._config.get_core_url(core)}/select/"
-        query = []
-        for key, value in self.facets.items():
-            query_pos, query_neg = self._join_facet_queries(key, value)
-            key = key.lower().replace("_not_", "")
-            if query_pos:
-                query.append(f"{key}:({query_pos})")
-            if query_neg:
-                query.append(f"-{key}:({query_neg})")
-        # Cause we are adding a new query which effects
-        # all queries, it might be a neckbottle of performance
-        if self.translator.flavour == "user":
-            user_query = "user:*"
-        else:
-            user_query = "{!ex=userTag}-user:*"
-        return url, {
-            "q": "*:*",
-            "fq": self.time + ["", user_query, " AND ".join(query) or "*:*"],
+
+    def _get_url_params(self) -> tuple[str, Dict[str, Any]]:
+        """Get the URL and query parameters for the search backends."""
+        def get_rdbms_params() -> tuple[str, dict]:
+            conditions = []
+            params = {"offset": self.secondary_backend_params.get("offset", 0), 
+                    "limit": self.secondary_backend_params.get("limit", 10)}
+            param_idx = 1
+
+            for field, values in self.facets.items():
+                if not values:
+                    continue
+                stac_expr = self.secondary_backend_lookuptable.get(field)
+                if not stac_expr:
+                    continue
+                field_conditions = []
+                for value in values:
+                    param_name = f"p_{param_idx}"
+                    if isinstance(value, str) and value.lower().startswith("not "):
+                        field_conditions.append(f"NOT ({stac_expr} = :{param_name})")
+                        params[param_name] = value[4:]
+                    else:
+                        field_conditions.append(f"{stac_expr} = :{param_name}")
+                        params[param_name] = value
+                    param_idx += 1
+
+                if field_conditions:
+                    conditions.append(f"({' OR '.join(field_conditions)})")
+
+            if hasattr(self, 'time') and self.time:
+                time_condition, time_params = self.time
+                conditions.append(f"({time_condition})")
+                params.update(time_params)
+
+            where_clause = " AND ".join(conditions) if conditions else "TRUE"
+            return None, {"where_clause": where_clause, "params": params}
+        def get_se_params() -> tuple[str, dict]:
+            query_body = {
+                "query": {
+                    "bool": {
+                        "must": [{"match_all": {}}],
+                        "must_not": []
+                    }
+                },
+                "_source": [self.secondary_backend_lookuptable[field] for field in self.secondary_backend_lookuptable],
+                "sort": [{"_id": "asc"}]
+            }
+            if hasattr(self, 'secondary_backend_params'):
+                query_body["from"] = self.secondary_backend_params.get("offset", 0)
+                query_body["size"] = self.secondary_backend_params.get("limit", 10)
+            if hasattr(self, 'facets') and self.facets:
+                for key, values in self.facets.items():
+                    if not values or key not in self.secondary_backend_lookuptable:
+                        continue
+                        
+                    secondary_backend_keys = self.secondary_backend_lookuptable[key]
+                    for value in values:
+                        if isinstance(value, str) and value.lower().startswith("not "):
+                            query_body["query"]["bool"]["must_not"].append({
+                                "term": {f"{secondary_backend_keys}": value[4:]}
+                            })
+                        else:
+                            query_body["query"]["bool"]["must"].append({
+                                "term": {f"{secondary_backend_keys}": value}
+                            })
+            query_body["aggs"] = {
+                f"facet_{field}": {
+                    "terms": {
+                        "field": f"{self.secondary_backend_lookuptable[field]}",
+                        "size": 1000
+                    }
+                }
+                for field in self.only_allowed_fields
+                if field in self.secondary_backend_lookuptable
+            }
+            if hasattr(self, 'time') and self.time:
+                query_body["query"]["bool"]["must"].append(self.time)
+            params = {
+                "source": json.dumps(query_body),
+                "source_content_type": "application/json"
+            }
+            return f"{self.secondary_backend_dns}", params
+
+        def get_solr_params() -> tuple[str, dict]:
+            core = {
+                True: self._config.solr_cores[0],
+                False: self._config.solr_cores[-1],
+            }[self.multi_version]
+            url = f"{self._config.get_core_url(core)}/select/"
+            
+            query = []
+            for key, value in self.facets.items():
+                query_pos, query_neg = self._join_facet_queries(key, value)
+                key = key.lower().replace("_not_", "")
+                if query_pos:
+                    query.append(f"{key}:({query_pos})")
+                if query_neg:
+                    query.append(f"-{key}:({query_neg})")
+
+            user_query = "user:*" if self.translator.flavour == "user" else "{!ex=userTag}-user:*"
+            
+            return url, {
+                "q": "*:*",
+                "fq": self.time + ["", user_query, " AND ".join(query) or "*:*"],
+            }
+
+        backend_handlers = {
+            "SE": get_se_params,
+            "solr": get_solr_params,
+            "RDBMS": get_rdbms_params
         }
+
+        handler = backend_handlers.get(self.backend_type, get_solr_params)
+        return handler()
+
 
     @property
     def _post_url(self) -> str:
@@ -1071,15 +1614,59 @@ class Solr:
                 break
             self.query["cursorMark"] = next_cursor_mark
 
+
+    async def _secondarybackend_page_response(self) -> AsyncIterator[Dict[str, Any]]:
+        """Stream results using appropriate pagination strategy for SE (ES/OS) and RDBMS."""
+        last_id = None
+        offset = 0        
+        while True:
+            try:
+                start_method_key = 'offset' if self.backend_type == 'RDBMS' else 'from'
+                params = {
+                    "unique_key": self.uniq_key,
+                    "limit": self.batch_size,
+                    "last_id": last_id,
+                    "offset": self.secondary_backend_params.get(start_method_key),
+                    "desired_output": ["search_results"]
+                }
+                
+                search_results = await self._query_translator_executor(**params)
+                results = search_results["search_results"]
+                if not results:
+                    break
+                for idx, result_with_id_sort in enumerate(results):
+                    if self.backend_type == "SE" and idx == len(results) - 1:
+                        last_id = result_with_id_sort.get("sort")
+                    else:
+                        last_id = result_with_id_sort.get(self.secondary_backend_pagination)
+                    result = {k: v for k, v in result_with_id_sort.items() if k not in [self.secondary_backend_pagination, "sort"]}
+                    yield result
+                    
+                if len(results) < self.batch_size:
+                    break
+                if self.backend_type != "SE":
+                    offset += self.batch_size
+                
+            except Exception as e:
+                logger.error(f"Error streaming results for {self.backend_type}: %s", str(e))
+                break
+
+
     async def stream_response(self) -> AsyncIterator[str]:
-        """Search for uniq keys matching given search facets.
+        """Search for unique keys matching given search facets.
 
         Returns
         -------
-        AsyncIterator: Stream of search results.
+        AsyncIterator[str]
+            Stream of search results, one unique key per line.
         """
-        async for result in self._solr_page_response():
-            yield f"{result[self.uniq_key]}\n"
+        if self.backend_type in ["RDBMS", "SE"]:
+            async for result in self._secondarybackend_page_response():
+                if self.uniq_key in result:
+                    yield f"{result[self.uniq_key]}\n"
+        else:
+            async for result in self._solr_page_response():
+                yield f"{result[self.uniq_key]}\n"
 
     async def zarr_response(
         self,
@@ -1103,7 +1690,11 @@ class Solr:
                 yield string
             yield ',\n   "catalog_dict": ['
         num = 1
-        async for result in self._solr_page_response():
+        if self.backend_type in ["RDBMS", "SE"]:
+            result_iterator = self._secondarybackend_page_response()
+        else:
+            result_iterator = self._solr_page_response()
+        async for result in result_iterator:
             prefix = suffix = ""
             uri = result[self.uniq_key]
             uuid5 = str(uuid.uuid5(uuid.NAMESPACE_URL, uri))
