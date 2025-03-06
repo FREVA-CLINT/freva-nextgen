@@ -111,12 +111,19 @@ MYSQL_PASSWORD=
 MYSQL_ROOT_PASSWORD=
 MYSQL_DATABASE= # Database name for legacy freva
 
+# STAC API (Optional)
+API_STAC_HOST=
+API_STACBROWSER_HOST=
+API_STAC_MAX_ITEMS=
+
 # Service activation flags
 # Set to 1 to enable, 0 to disable the service (default)
 USE_MONGODB=0  # Controls MongoDB initialization
 USE_SOLR=0     # Controls Apache Solr initialization
 USE_REDIS=0    # Set up a redis distributed cache
 USE_MYSQL=0    # Set up a mysql server
+USE_STACAPI=0 # Setup STAC-API
+USE_OPENSEARCH=0 # Set up an Opensearch instance for running STAC-API
 ```
 
 > [!TIP]
@@ -133,6 +140,15 @@ USE_MYSQL=0    # Set up a mysql server
 > -e MYSQL_ROOT_PASSWORD=my-root-pass \
 > -e MYSQL_DATABASE=bar \
 > ghcr.io/freva-clint/freva-rest:latest follow mysql
+
+
+> [!NOTE]
+> List of all necessary and default environment variables for running the STAC API, 
+> has been listed in the following link:
+>
+> https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch?tab=readme-ov-file#key-variables-to-configure
+>
+> If you want to have this feature, please add them to the dokcer environment variables.
 
 ### Required Volumes
 The container can use several persistent volumes that should be mounted:

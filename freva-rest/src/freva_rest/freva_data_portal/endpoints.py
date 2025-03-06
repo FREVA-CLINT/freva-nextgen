@@ -102,12 +102,8 @@ async def get_status(
     current_user: TokenPayload = Depends(auth.required),
 ) -> JSONResponse:
     """Get the status of a loading process."""
-    meta: Dict[str, Any] = await read_redis_data(
-        uuid5, "status", timeout=timeout
-    )
-    return JSONResponse(
-        content={"status": meta}, status_code=status.HTTP_200_OK
-    )
+    meta: Dict[str, Any] = await read_redis_data(uuid5, "status", timeout=timeout)
+    return JSONResponse(content={"status": meta}, status_code=status.HTTP_200_OK)
 
 
 @app.get(
@@ -145,9 +141,7 @@ async def zemtadata(
     data within the particular zarr store in question.
     """
 
-    meta: Dict[str, Any] = await read_redis_data(
-        uuid5, "json_meta", timeout=timeout
-    )
+    meta: Dict[str, Any] = await read_redis_data(uuid5, "json_meta", timeout=timeout)
     return JSONResponse(
         content=meta,
         status_code=status.HTTP_200_OK,
@@ -192,9 +186,7 @@ async def zgroup(
     organizing and managing the structure of data within a Zarr group,
     allowing users to access and manipulate arrays and subgroups efficiently.
     """
-    meta: Dict[str, Any] = await read_redis_data(
-        uuid5, "json_meta", timeout=timeout
-    )
+    meta: Dict[str, Any] = await read_redis_data(uuid5, "json_meta", timeout=timeout)
     return JSONResponse(
         content=meta["metadata"][".zgroup"],
         status_code=status.HTTP_200_OK,
@@ -237,9 +229,7 @@ async def zattrs(
     or arrays, such as descriptions, units, creation dates, or any other
     custom metadata relevant to the data.
     """
-    meta: Dict[str, Any] = await read_redis_data(
-        uuid5, "json_meta", timeout=timeout
-    )
+    meta: Dict[str, Any] = await read_redis_data(uuid5, "json_meta", timeout=timeout)
     return JSONResponse(
         content=meta["metadata"][".zattrs"], status_code=status.HTTP_200_OK
     )
@@ -271,9 +261,7 @@ async def chunk_data(
     ],
     chunk: Annotated[
         str,
-        Path(
-            title="chunk", description="The chnuk number that should be read."
-        ),
+        Path(title="chunk", description="The chnuk number that should be read."),
     ],
     timeout: Annotated[
         int,

@@ -18,6 +18,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -73,6 +76,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -130,6 +136,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -185,6 +194,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -242,6 +254,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -297,6 +312,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -354,6 +372,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -409,6 +430,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -466,6 +490,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -521,6 +548,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -578,6 +608,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -633,6 +666,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -690,6 +726,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -745,6 +784,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -802,6 +844,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -857,6 +902,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -914,6 +962,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -969,6 +1020,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1026,6 +1080,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1081,6 +1138,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1138,6 +1198,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1193,6 +1256,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1250,6 +1316,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1306,6 +1375,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1361,6 +1433,9 @@
       ],
       "time_frequency": [
          "3hr"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1426,6 +1501,9 @@
       ],
       "time_frequency": [
          "day"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1684,6 +1762,9 @@
       "time_frequency": [
          "mon"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1739,6 +1820,9 @@
       ],
       "time_frequency": [
          "mon"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1796,6 +1880,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -1851,6 +1938,9 @@
       ],
       "time_frequency": [
          "3hr"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -1916,6 +2006,9 @@
       ],
       "time_frequency": [
          "day"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2038,6 +2131,9 @@
       "time_frequency": [
          "mon"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2093,6 +2189,9 @@
       ],
       "time_frequency": [
          "mon"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2211,6 +2310,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2266,6 +2368,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2323,6 +2428,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2378,6 +2486,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2435,6 +2546,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2490,6 +2604,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2547,6 +2664,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2602,6 +2722,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2659,6 +2782,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2714,6 +2840,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2771,6 +2900,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2826,6 +2958,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2883,6 +3018,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -2938,6 +3076,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -2995,6 +3136,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3050,6 +3194,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3107,6 +3254,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3162,6 +3312,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3219,6 +3372,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3274,6 +3430,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3331,6 +3490,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3386,6 +3548,9 @@
       ],
       "time_frequency": [
          "1min"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3443,6 +3608,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3499,6 +3667,9 @@
       "time_frequency": [
          "1min"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3554,6 +3725,9 @@
       ],
       "time_frequency": [
          "3hr"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3620,6 +3794,9 @@
       "time_frequency": [
          "day"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3684,6 +3861,9 @@
       ],
       "time_frequency": [
          "fx"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3806,6 +3986,9 @@
       "time_frequency": [
          "mon"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3861,6 +4044,9 @@
       ],
       "time_frequency": [
          "mon"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"
@@ -3918,6 +4104,9 @@
       "time_frequency": [
          "mon"
       ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
+      ],
       "realm": [
          "atmos"
       ],
@@ -3973,6 +4162,9 @@
       ],
       "time_frequency": [
          "mon"
+      ],
+      "bbox": [
+         "ENVELOPE(-180.00, 180.00, 90.00,-90.00)"
       ],
       "realm": [
          "atmos"

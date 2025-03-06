@@ -29,3 +29,13 @@ key_file = ""
 discovery_url = "http://localhost:8080/realms/freva/.well-known/openid-configuration"
 client_id = "freva"
 client_secret = ""
+
+# Attention: The followinng `stacapi` and `stacbrowser`
+# configurations are aoptional and would be activated 
+# if the `stac_dynamic` set to `true` in your search
+# params.
+
+[stacapi]
+api_hostname = "http://stac:secret@localhost:8083"
+browser_hostname = "https://radiantearth.github.io/stac-browser/#/external/http:/localhost:8083/"
+max_items = 1000
