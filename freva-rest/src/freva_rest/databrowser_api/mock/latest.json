@@ -1,6 +1,281 @@
 [
    {
       "project": [
+         "nukleus"
+      ],
+      "product": [
+         "eur-11"
+      ],
+      "institute": [
+         "btu"
+      ],
+      "model": [
+         "EC-Earth-Consortium-EC-Earth3-Veg-LMcom-BTU-ICON"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "mon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2001-01-01T00:00 TO 2010-12-31T23:59]",
+      "file_name": [
+          "$CWD/data/model/regional/nukleus/pr_1.nc"
+      ],
+      "file": "$CWD/data/model/regional/nukleus/pr_1.nc",
+      "timestamp": 1688275840.0,
+      "uri": "$CWD/data/model/regional/nukleus/pr_1.nc",
+      "dataset": [
+         "nukleus-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "nukleus"
+      ],
+      "product": [
+         "eur-11"
+      ],
+      "institute": [
+         "btu"
+      ],
+      "model": [
+         "EC-Earth-Consortium-EC-Earth3-Veg-LMcom-BTU-ICON"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "mon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "pr"
+      ],
+      "time": "[2011-01-01T00:00 TO 2014-12-31T23:59]",
+      "file_name": [
+          "$CWD/data/model/regional/nukleus/pr_2.nc"
+      ],
+      "file": "$CWD/data/model/regional/nukleus/pr_2.nc",
+      "timestamp": 1688275840.0,
+      "uri": "$CWD/data/model/regional/nukleus/pr_2.nc",
+      "dataset": [
+         "nukleus-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "nukleus"
+      ],
+      "product": [
+         "eur-11"
+      ],
+      "institute": [
+         "btu"
+      ],
+      "model": [
+         "EC-Earth-Consortium-EC-Earth3-Veg-LMcom-BTU-ICON"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "mon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "tas"
+      ],
+      "time": "[2001-01-01T00:00 TO 2010-12-31T23:59]",
+      "file_name": [
+          "$CWD/data/model/regional/nukleus/tas_1.nc"
+      ],
+      "file": "$CWD/data/model/regional/nukleus/tas_1.nc",
+      "timestamp": 1688275840.0,
+      "uri": "$CWD/data/model/regional/nukleus/tas_1.nc",
+      "dataset": [
+         "nukleus-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "nukleus"
+      ],
+      "product": [
+         "eur-11"
+      ],
+      "institute": [
+         "btu"
+      ],
+      "model": [
+         "EC-Earth-Consortium-EC-Earth3-Veg-LMcom-BTU-ICON"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "mon"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "mon"
+      ],
+      "ensemble": [
+         "r1i1p1"
+      ],
+      "variable": [
+         "tas"
+      ],
+      "time": "[2011-01-01T00:00 TO 2014-12-31T23:59]",
+      "file_name": [
+          "$CWD/data/model/regional/nukleus/tas_2.nc"
+      ],
+      "file": "$CWD/data/model/regional/nukleus/tas_2.nc",
+      "timestamp": 1688275840.0,
+      "uri": "$CWD/data/model/regional/nukleus/tas_2.nc",
+      "dataset": [
+         "nukleus-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "avg"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
+         "nukleus"
+      ],
+      "product": [
+         "eur-11"
+      ],
+      "institute": [
+         "btu"
+      ],
+      "model": [
+         "EC-Earth-Consortium-EC-Earth3-Veg-LMcom-BTU-ICON"
+      ],
+      "experiment": [
+         "historical"
+      ],
+      "time_frequency": [
+         "fx"
+      ],
+      "realm": [
+         "atmos"
+      ],
+      "cmor_table": [
+         "fx"
+      ],
+      "ensemble": [
+         "r0i0p0"
+      ],
+      "variable": [
+         "fx"
+      ],
+      "time": "[0 TO 9999]",
+      "file_name": [
+          "$CWD/data/model/regional/nukleus/orog.nc"
+      ],
+      "file": "$CWD/data/model/regional/nukleus/orog.nc",
+      "timestamp": 1688275840.0,
+      "uri": "$CWD/data/model/regional/nukleus/orog.nc",
+      "dataset": [
+         "nukleus-fs"
+      ],
+      "format": [
+         "nc"
+      ],
+      "grid_label": [
+         "gn"
+      ],
+      "time_aggregation": [
+         "fx"
+      ],
+      "level_type": [
+         "2d"
+      ],
+      "creation_time": "2023-07-15T02:48:42.421Z"
+   },
+   {
+      "project": [
          "observations"
       ],
       "product": [
