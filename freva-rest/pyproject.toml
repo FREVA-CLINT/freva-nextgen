@@ -38,6 +38,9 @@ dependencies = [
 "typing_extensions",
 "uvicorn",
 "zarr<3",
+"sqlalchemy",
+"asyncpg",
+"greenlet",
 ]
 [project.scripts]
 freva-rest-server = "freva_rest.cli:cli"

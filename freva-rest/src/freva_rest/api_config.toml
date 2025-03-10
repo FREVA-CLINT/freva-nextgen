@@ -112,3 +112,102 @@ client_id = "freva"
 # Secret key associated with the client ID. Keep this secure as it is used to
 # authenticate the API to the OIDC provider.
 client_secret = ""
+
+
+### IMPORTANT: If you uncomment the whole configuration below, you can use 
+## the secondary-backend for connecting to all kind of Rational Database
+## Management System (RDBMS) backend and search engine (SE) backend like
+## Elasticsearch or OpenSearch. You can uncomment one of the following
+## sections based on the backend you want to connect to.
+
+# # PostgreSQL Configuration
+
+# [secondary-backend]
+# # (OPTIONAL)Secondary Backend configuration for connecting to
+# # all kind of Rational Database Management System (RDBMS) backend and 
+# # search engine (SE) backend like Elasticsearch or OpenSearch.
+# # You can uncomment one of the following sections based on the 
+# # backend you want to connect to.
+
+# # In the following examples we generally consider the native 
+# # backends of STAC, pgSTAC and ES and OS as use cases.
+
+# type = "RDBMS"
+# dns = "postgresql+asyncpg://pgstac:secret@localhost:5432/postgis"
+# table = "pgstac.items"
+# pagination_column = "id" # IMPORTANT: specify the column name for pagination
+# limit_offset = "LIMIT :limit OFFSET :offset" # IMPORTANT: One can specify the limit and offset variables based on the database-specific syntax
+
+# [secondary-backend.lookuptable]
+# # secondary-backend.lookuptable section defines the lookup table 
+# # mapping between secondary backend fields and the data search params
+# # used in the Freva-API. 
+# # This allows the API to query secondary backend as backend of the 
+# # Freva-API.
+
+# # For finding the supported Freva search keys you can have a look at 
+# # the Freva-API documentation.
+# # https://github.com/FREVA-CLINT/freva-service-config/blob/main/solr/managed-schema.xml
+# # Or be in contact with the Freva team at freva@dkrz.de
+
+# # For example to get more informeation regarding the syntax of JSON
+# # Postgres backend, please refer to the documentation.
+# # https://www.postgresql.org/docs/current/functions-json.html
+# project = "collection"
+# product = "content->'properties'->>'product'"
+# institute = "content->'properties'->>'institute'"
+# experiment = "content->'properties'->>'experiment'"
+# time_min = "content->'properties'->>'start_datetime'"
+# time_max = "content->'properties'->>'end_datetime'"
+# variables = "content->'properties'->'cube:variables'"
+# file = "content->'assets'->'data'->>'href'"
+# uri = "content->'assets'->'data'->>'href'"
+# fs_type = "content->'properties'->>'fs_type'"
+
+# [secondary-backend.lookuptable.defaults]
+# # This section defines the default values for the lookup table 
+# # mapping between secondary backend fields and the data search
+# # params used in the Freva-API.
+
+# project = "freva"
+# product = "freva"
+# institute = "JSC"
+# experiment = "STACBackendadoptation"
+# time_min = "1900-01-01T00:00:00Z"
+# time_max = "2100-12-31T23:59:59Z"
+# variables = "variable1"
+# file = "file"
+# uri = "uri"
+# fs_type = "posix"
+
+
+# # OpenSearch Configuration
+
+# [secondary-backend]
+
+# type = "SE"  # or "opensearch" or "postgres"
+# dns = "http://localhost:9203/items_*"
+# index = "items_*"
+# # Note: table and pagination_column are not required for SE backends
+
+# [secondary-backend.lookuptable]
+# project = "collection.keyword"
+# product = "properties.product.keyword"
+# institute = "properties.institute.keyword"
+# experiment = "properties.experiment.keyword"
+# time_min = "properties.start_datetime"
+# time_max = "properties.end_datetime"
+# variables = "properties.cube:variables"
+# file = "assets.data.href"
+# uri = "assets.data.href"
+
+# [secondary-backend.lookuptable.defaults]
+# project = "freva"
+# product = "freva"
+# institute = "JSC"
+# experiment = "STACBackendadoptation"
+# time_min = "1900-01-01T00:00:00Z"
+# time_max = "2100-12-31T23:59:59Z"
+# variables = "variable1"
+# file = "file"
+# uri = "uri"

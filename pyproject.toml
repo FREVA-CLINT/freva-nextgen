@@ -73,6 +73,10 @@ deps = -e ./freva-rest
        pytest-env
        setuptools
        xarray
+       pypgstac
+       opensearch-py
+       psycopg
+       psycopg_pool
 
 commands =
     pytest -vv --cov=freva-rest --cov=freva-client --cov=freva-data-portal-worker --cov-report=html:coverage_report --junitxml report.xml --cov-report xml tests/

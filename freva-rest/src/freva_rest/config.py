@@ -22,13 +22,16 @@ from typing import (
     Union,
     cast,
 )
-
+import asyncio
 import requests
 import tomli
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from pydantic import BaseModel, Field
-
+from contextlib import asynccontextmanager
 from .logger import logger, logger_file_handle
+from sqlalchemy.sql import text
+
 
 ConfigItem = Union[str, int, float, None]
 
@@ -187,9 +190,54 @@ class ServerConfig(BaseModel):
             description="The OIDC client secret, if any, used for authentication.",
         ),
     ] = os.getenv("API_OIDC_CLIENT_SECRET", "")
+    # TODO: Since all are coming from a toml file, we can consider the following
+    # variables as a dict.
+    secondary_backend_type: Annotated[
+        str,
+        Field(
+            title="Secondary backend type",
+            description="The type of the secondary backend service.",
+            default=None,
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_TYPE", "")
+    secondary_backend_dns: Annotated[
+        str,
+        Field(
+            title="STAC backend dns",
+            description="Set the dns to the secondary backend service.",
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_dns", "")
+    secondary_backend_table: Annotated[
+        str,
+        Field(
+            title="Secondary RDBMS backend table",
+            description="Set the table to the Secondary backend service.",
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_TABLE", "pgstac.items")
+    secondary_backend_pagination: Annotated[
+        str,
+        Field(
+            title="Secondary Search Engine backend pagination",
+            description="Set the pagination column to the Secondary backend service.",
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_PAGINATION_COLUMN", "id")
+    secondary_backend_limit_offset: Annotated[
+        str,
+        Field(
+            title="Secondary Search Engine backend limit offset",
+            description="Set the limit offset to the Secondary backend service.",
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_LIMIT_OFFSET", "LIMIT :limit OFFSET :offset")
+    secondary_backend_lookuptable: Annotated[
+        dict,
+        Field(
+            title="Secondary Search Engine backend lookuptable",
+            description="Set the lookuptable to the Secondary backend service.",
+        ),
+    ] = os.getenv("API_SECONDARY_BACKEND_LOOKUPTABLE", {})
 
     def _read_config(self, section: str, key: str) -> Any:
-        fallback = self._fallback_config[section][key] or None
+        fallback = self._fallback_config.get(section, {}).get(key) or None
         return self._config.get(section, {}).get(key, fallback)
 
     def model_post_init(self, __context: Any = None) -> None:
@@ -198,6 +246,7 @@ class ServerConfig(BaseModel):
         )
         self._config: Dict[str, Any] = {}
         api_config = Path(self.config).expanduser().absolute()
+        VALID_SECONDARY_BACKEND_TYPES = {"RDBMS", "SE"}
         try:
             self._config = tomli.loads(api_config.read_text())
         except Exception as error:
@@ -208,6 +257,7 @@ class ServerConfig(BaseModel):
         self.debug = bool(self.debug)
         self.set_debug(self.debug)
         self._mongo_client: Optional[AsyncIOMotorClient] = None
+        self._sqlaclchemy_client: Optional[async_sessionmaker[AsyncSession]] = None
         self._solr_fields = self._get_solr_fields()
         self._oidc_overview: Optional[Dict[str, Any]] = None
         self.api_services = self.api_services or ",".join(
@@ -255,6 +305,18 @@ class ServerConfig(BaseModel):
         self.redis_host = self.redis_host or self._read_config(
             "cache", "hostname"
         )
+        self.secondary_backend_type = (backend_type := self.secondary_backend_type or self._read_config("secondary-backend", "type")) in VALID_SECONDARY_BACKEND_TYPES and backend_type
+        self.secondary_backend_dns = self.secondary_backend_dns or self._read_config(
+            "secondary-backend", "dns"
+        )
+        self.secondary_backend_table = self.secondary_backend_table or self._read_config(
+            "secondary-backend", "table"
+        )
+        self.secondary_backend_pagination = self.secondary_backend_pagination or self._read_config(
+            "secondary-backend", "pagination_column"
+        )
+        self.secondary_backend_limit_offset = self.secondary_backend_limit_offset or self._read_config("secondary-backend", "limit_offset")
+        self.secondary_backend_lookuptable = self.secondary_backend_lookuptable or self._fallback_config.get("secondary-backend.lookuptable")
 
     @staticmethod
     def get_url(url: str, default_port: Union[str, int]) -> str:
@@ -398,3 +460,43 @@ class ServerConfig(BaseModel):
                 "Connection to %s failed: %s", url, error
             )  # pragma: no cover
             yield ""  # pragma: no cover
+
+    # TODO: Take a double look at the following methods
+    # to ensure closing the session works as expected.
+    async def _init_secondary_backend_client(self) -> Any:
+        """Initialize a new RDBMS client"""
+        engine = create_async_engine(
+            self.secondary_backend_dns,
+            echo=self.debug,
+            pool_pre_ping=True,
+        )
+        return async_sessionmaker(
+            engine,
+            class_=AsyncSession,
+            expire_on_commit=False
+        )
+
+    async def _get_rdbms_client(self) -> Any:
+        """Get or create a client for the secondary RDBMS."""
+        if self._sqlaclchemy_client is None:
+            return await self._init_secondary_backend_client()
+        return self._sqlaclchemy_client
+
+    @asynccontextmanager
+    async def get_rdbms_session(self, ) -> Any:
+        """Get a RDBMS session."""
+        client = await self._get_rdbms_client()
+        session = client()
+        try:
+            yield session
+        finally:
+            await session.close()
+
+    # TODO: we need to catch the errors better and log it
+    @asynccontextmanager
+    async def session_query_rdbms(self, query, params) -> AsyncSession:
+        async with self.get_rdbms_session() as session:
+            async with session.begin():
+                result = await session.execute(text(query), params or {})
+                yield result
+        
