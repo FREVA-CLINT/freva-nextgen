@@ -53,7 +53,8 @@ class Config:
         ini_parser.read_string(path.read_text())
         config = ini_parser["evaluation_system"]
         scheme, host = self._split_url(
-            config.get("databrowser.host", config.get("solr.host", ""))
+            cast(str, config.get("databrowser.host"))
+            or cast(str, config.get("solr.host"))
         )
         host, _, port = (host or "").partition(":")
         port = port or config.get("databrowser.port", "")
@@ -147,6 +148,11 @@ class Config:
     def intake_url(self) -> str:
         """Define the url for creating intake catalogues."""
         return f"{self.databrowser_url}/intake-catalogue/{self.flavour}/{self.uniq_key}"
+
+    @property
+    def stac_url(self) -> str:
+        """Define the url for creating stac collection."""
+        return f"{self.databrowser_url}/stac-catalogue/{self.flavour}/{self.uniq_key}"
 
     @property
     def metadata_url(self) -> str:

@@ -15,7 +15,13 @@ ENV API_CONFIG=/opt/freva-rest/api_config.toml \
     USE_MONGODB=0 \
     USE_SOLR=0 \
     USE_REDIS=0 \
-    USE_MYSQL=0
+    USE_MYSQL=0 \
+    USE_STACAPI=0 \
+    USE_OPENSEARCH=0
+
+# we need to define a user to run the opensearch service as non-root
+RUN groupadd -g 1000 opensearch && \
+    useradd -u 1000 -g opensearch -s /bin/bash -m opensearch
 
 FROM base AS builder
 WORKDIR /opt/app
@@ -27,6 +33,7 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip && \
 FROM base AS final
 WORKDIR /opt/freva-rest
 COPY --from=builder /opt/app/dist /opt/app/dist
+
 COPY src/freva_rest/api_config.toml $API_CONFIG
 ENV PATH=/opt/conda/bin:/usr/local/bin:$PATH
 RUN mkdir -p /docker-entrypoint-initdb.d && \

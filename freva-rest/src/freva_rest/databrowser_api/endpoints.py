@@ -1,11 +1,22 @@
 """Main script that runs the rest API."""
 
+import uuid
 from typing import Annotated, Any, Dict, List, Literal, Union
 
-from fastapi import Body, Depends, HTTPException, Query, Request, status
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from fastapi.responses import (
     JSONResponse,
     PlainTextResponse,
+    RedirectResponse,
     StreamingResponse,
 )
 from pydantic import BaseModel, Field
@@ -14,7 +25,7 @@ from freva_rest.auth import TokenPayload, auth
 from freva_rest.logger import logger
 from freva_rest.rest import app, server_config
 
-from .core import FlavourType, SearchResult, Solr, Translator
+from .core import STAC, FlavourType, SearchResult, Solr, Translator
 from .schema import Required, SearchFlavours, SolrSchema
 
 
@@ -39,9 +50,7 @@ class AddUserDataRequestBody(BaseModel):
     facets: Dict[str, Any] = Field(
         ...,
         description="Key-value pairs representing metadata search attributes.",
-        examples=[
-            {"project": "user-data", "product": "new", "institute": "globe"}
-        ],
+        examples=[{"project": "user-data", "product": "new", "institute": "globe"}],
     )
 
 
@@ -71,9 +80,7 @@ async def overview() -> SearchFlavours:
                 for f in translator.forward_lookup.values()
                 if f not in translator.cordex_keys
             ]
-    return SearchFlavours(
-        flavours=list(Translator.flavours), attributes=attributes
-    )
+    return SearchFlavours(flavours=list(Translator.flavours), attributes=attributes)
 
 
 @app.get(
@@ -113,9 +120,7 @@ async def metadata_search(
         start=0,
         **SolrSchema.process_parameters(request),
     )
-    status_code, result = await solr_search.extended_search(
-        facets or [], max_results=0
-    )
+    status_code, result = await solr_search.extended_search(facets or [], max_results=0)
     await solr_search.store_results(result.total_count, status_code)
     output = result.dict()
     del output["search_results"]
@@ -217,6 +222,90 @@ async def intake_catalogue(
         media_type="application/x-ndjson",
         headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
     )
+
+
+@app.get(
+    "/api/freva-nextgen/databrowser/stac-catalogue/{flavour}/{uniq_key}",
+    tags=["Data search"],
+    status_code=200,
+    responses={
+        303: {"description": "See Other - Redirected to STAC-Browser"},
+        413: {"description": "Result stream too big."},
+        422: {"description": "Invalid flavour or search keys."},
+        503: {"description": "Search backend error"},
+        500: {"description": "Internal server error"},
+    },
+    response_class=Response,
+)
+async def stac_catalogue(
+    flavour: FlavourType,
+    uniq_key: Literal["file", "uri"],
+    start: Annotated[int, SolrSchema.params["start"]] = 0,
+    multi_version: Annotated[bool, SolrSchema.params["multi_version"]] = False,
+    translate: Annotated[bool, SolrSchema.params["translate"]] = True,
+    max_results: Annotated[int, SolrSchema.params["max_results"]] = -1,
+    stac_dynamic: bool = False,
+    request: Request = Required,
+    background_tasks: BackgroundTasks = Required,
+) -> Response:
+    """Create a STAC catalogue from a freva search.
+
+    This endpoint transforms Freva databrowser search results into a dynamic
+    and STATIC SpatioTemporal Asset Catalog (STAC). STAC is an open standard
+    for geospatial data catalouging, enabling consistent discovery and access
+    of climate datasets, satellite imagery and spatiotemporal data. It provides
+    a common language for describing geospatial information and related metadata.
+    """
+    stac_instance = await STAC.validate_parameters(
+        server_config,
+        flavour=flavour,
+        uniq_key=uniq_key,
+        start=start,
+        multi_version=multi_version,
+        translate=translate,
+        **SolrSchema.process_parameters(request),
+    )
+    status_code, total_count = await stac_instance.validate_stac()
+    await stac_instance.store_results(total_count, status_code)
+    if total_count == 0:
+        raise HTTPException(status_code=404, detail="No results found.")
+    if total_count > max_results and max_results > 0:
+        raise HTTPException(status_code=413, detail="Result stream too big.")
+
+    collection_id = f"Dataset-{(f'{flavour}-{str(uuid.uuid4())}')[:18]}"
+    await stac_instance.init_stac_catalogue(request)
+    if stac_dynamic:
+        if total_count > int(server_config.stacapi_max_items):
+            raise HTTPException(status_code=413,
+                                detail="Result stream too big for STAC API.")
+        await stac_instance.stacapi_availability()
+        await stac_instance.init_stac_dynamic_collection(collection_id)
+
+        async def run_stac_creation() -> None:
+            """Execute the STAC catalogue creation background task"""
+            async for _ in stac_instance.stream_stac_catalogue(
+                collection_id, stac_dynamic
+            ):
+                pass  # pragma: no cover
+        background_tasks.add_task(run_stac_creation)
+        stacbrowser_url = server_config.stacbrowser_host.rstrip('/')
+        redirect_url = (
+            f"{stacbrowser_url}"
+            f"/collections/{collection_id}"
+        )
+        return RedirectResponse(
+            url=redirect_url,
+            status_code=303
+        )
+    else:
+        file_name = f"stac-catalog-{collection_id}-{uniq_key}.tar.gz"
+        return StreamingResponse(
+            stac_instance.stream_stac_catalogue(collection_id, stac_dynamic),
+            media_type="application/x-tar+gzip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_name}"'
+            }
+        )
 
 
 @app.get(
@@ -401,6 +490,4 @@ async def delete_user_data(
             detail=f"Failed to delete user data: {error}",
         )
 
-    return {
-        "status": "User data has been deleted successfully from the databrowser."
-    }
+    return {"status": "User data has been deleted successfully from the databrowser."}

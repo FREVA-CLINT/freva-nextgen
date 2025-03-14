@@ -36,8 +36,11 @@ dependencies = [
 "uuid",
 "tomli",
 "typing_extensions",
-"uvicorn",
 "zarr<3",
+"pystac",
+"httpx",
+"uvicorn",
+"stac_fastapi.opensearch",
 ]
 [project.scripts]
 freva-rest-server = "freva_rest.cli:cli"

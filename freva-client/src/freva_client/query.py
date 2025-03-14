@@ -20,7 +20,6 @@ from typing import (
 )
 
 import intake
-import intake_esm
 import requests
 import xarray as xr
 import yaml
@@ -63,8 +62,10 @@ class databrowser:
         timestamp. The timestamps has to follow ISO-8601. Valid strings are
         ``%Y-%m-%dT%H:%M to %Y-%m-%dT%H:%M`` for time ranges or
         ``%Y-%m-%dT%H:%M`` for single time stamps.
-        **Note**: You don't have to give the full string format to subset
-        time steps: `%Y`, `%Y-%m` etc are also valid.
+
+        .. note:: You don't have to give the full string format to subset time
+                steps ``%Y``, ``%Y-%m`` etc are also valid.
+
     time_select: str, default: flexible
         Operator that specifies how the time period is selected. Choose from
         flexible (default), strict or file. ``strict`` returns only those files
@@ -74,6 +75,20 @@ class databrowser:
         ``flexible`` returns those files that have either start or end period
         covered. ``file`` will only return files where the entire time
         period is contained within `one single` file.
+    bbox: str, default: ""
+        Special search facet to refine/subset search results by spatial extent.
+        This can be a list representation of a bounding box or a WKT polygon.
+        Valid lists are ``min_lon max_lon min_lat max_lat`` for bounding
+        boxes and Well-Known Text (WKT) format for polygons.
+
+    bbox_select: str, default: flexible
+        Operator that specifies how the spatial extent is selected. Choose from
+        flexible (default), strict or file. ``strict`` returns only those files
+        that fully contain the query extent. The bbox search ``-10 10 -10 10``
+        will not select files covering only ``0 5 0 5`` with the ``strict``
+        method. ``flexible`` will select those files as it returns files that
+        have any overlap with the query extent. ``file`` will only return files
+        where the entire spatial extent is contained by the query geometry.
     uniq_key: str, default: file
         Chose if the solr search query should return paths to files or
         uris, uris will have the file path along with protocol of the storage
@@ -214,6 +229,8 @@ class databrowser:
         time: Optional[str] = None,
         host: Optional[str] = None,
         time_select: Literal["flexible", "strict", "file"] = "flexible",
+        bbox: Optional[Tuple[float, float, float, float]] = None,
+        bbox_select: Literal["flexible", "strict", "file"] = "flexible",
         stream_zarr: bool = False,
         multiversion: bool = False,
         fail_on_error: bool = False,
@@ -238,6 +255,10 @@ class databrowser:
         if time:
             self._params["time"] = time
             self._params["time_select"] = time_select
+        if bbox:
+            bbox_str = ",".join(map(str, bbox))
+            self._params["bbox"] = bbox_str
+            self._params["bbox_select"] = bbox_select
         if facets:
             self._add_search_keyword_args_from_facet(facets, facet_search)
 
@@ -365,7 +386,7 @@ class databrowser:
                 f"Couldn't write catalogue content: {error}"
             ) from None
 
-    def intake_catalogue(self) -> intake_esm.core.esm_datastore:
+    def intake_catalogue(self) -> Any:
         """Create an intake esm catalogue object from the search.
 
         This method creates a intake-esm catalogue from the current object
@@ -394,10 +415,98 @@ class databrowser:
         """
         with NamedTemporaryFile(suffix=".json") as temp_f:
             self._create_intake_catalogue_file(temp_f.name)
-            return cast(
-                intake_esm.core.esm_datastore,
-                intake.open_esm_datastore(temp_f.name),
+            return intake.open_esm_datastore(temp_f.name)
+
+    def stac_catalogue(
+        self,
+        filename: Optional[Union[str, Path]] = None,
+        **kwargs: Any,
+    ) -> str:
+        """Create an static or dynamic STAC API catalogue endpoint
+        from the search. This method creates a STAC API collection
+        endpoint from the current object search.
+
+        Parameters
+        ~~~~~~~~~~
+        stac_dynamic: bool, default: False
+            Create a dynamic STAC API collection endpoint. If set to False
+            a static STAC catalogue will be created.
+        filename: str, default: None
+            The filename of the STAC catalogue. If not given the STAC catalogue
+            will be saved to the current working directory.
+        **kwargs: Any
+            Additional keyword arguments to be passed to the request.
+
+        Returns
+        ~~~~~~~
+        Union[Dict[str, Any], BinaryIO]
+        Either a STAC API collection endpoint as a dictionary (for dynamic catalogs),
+        or a tar.gz file stream (for static catalogs).
+
+        Raises
+        ~~~~~~
+        ValueError: If stac-catalogue creation failed.
+
+        Example
+        ~~~~~~~
+        Let's create an STAC API collection endpoint to get access
+        to the metadata and data:
+
+        .. execute_code::
+
+            from freva_client import databrowser
+            db = databrowser(dataset="cmip6-hsm")
+            print(db.stac_catalogue())
+
+        Now let's create a static STAC catalogue:
+
+        .. execute_code::
+
+            from tempfile import mktemp
+            temp_path = mktemp(suffix=".tar.gz")
+
+            from freva_client import databrowser
+            db = databrowser(dataset="cmip6-hsm")
+            db.stac_catalogue(filename=temp_path)
+            print(f"STAC catalog saved to: {temp_path}")
+
+        """
+        params: Dict[str, Any] = {
+            "stac_dynamic": False if filename is not None else True
+        }
+        kwargs.update({"stream": True,
+                       "params": params})
+        stac_url = self._cfg.stac_url
+        result = self._request("GET", stac_url, **kwargs)
+        if result is None or result.status_code == 404:
+            raise ValueError(
+                "No STAC catalog found. Please check if you have any search results."
             )
+        if params.get("stac_dynamic") is False:
+            default_filename = result.headers.get('Content-Disposition', '').split(
+                'filename=')[-1].strip('"')
+
+            save_path = Path(cast(str, filename))
+
+            if save_path.is_dir() and save_path.exists():
+                save_path = save_path / default_filename
+
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+
+            total_size = 0
+            with open(save_path, 'wb') as f:
+                for chunk in result.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        total_size += len(chunk)
+
+            return (
+                f"STAC catalog saved to: {save_path} "
+                f"(size: {total_size / 1024 / 1024:.2f} MB). "
+                f"Or simply download from: {result.url}"
+            )
+        else:
+            return f"STAC catalog available at: {result.url}"
 
     @classmethod
     def count_values(
@@ -409,6 +518,8 @@ class databrowser:
         time: Optional[str] = None,
         host: Optional[str] = None,
         time_select: Literal["flexible", "strict", "file"] = "flexible",
+        bbox: Optional[Tuple[float, float, float, float]] = None,
+        bbox_select: Literal["flexible", "strict", "file"] = "flexible",
         multiversion: bool = False,
         fail_on_error: bool = False,
         extended_search: bool = False,
@@ -432,8 +543,11 @@ class databrowser:
             This can be a string representation of a time range or a single
             timestamp. The timestamp has to follow ISO-8601. Valid strings are
             ``%Y-%m-%dT%H:%M`` to ``%Y-%m-%dT%H:%M`` for time ranges and
-            ``%Y-%m-%dT%H:%M``. **Note**: You don't have to give the full string
-            format to subset time steps ``%Y``, ``%Y-%m`` etc are also valid.
+            ``%Y-%m-%dT%H:%M``.
+
+            .. note:: You don't have to give the full string format to subset time
+                    steps ``%Y``, ``%Y-%m`` etc are also valid.
+
         time_select: str, default: flexible
             Operator that specifies how the time period is selected. Choose from
             flexible (default), strict or file. ``strict`` returns only those files
@@ -443,6 +557,20 @@ class databrowser:
             ``flexible`` returns those files that have either start or end period
             covered. ``file`` will only return files where the entire time
             period is contained within `one single` file.
+        bbox: str, default: ""
+            Special search facet to refine/subset search results by spatial extent.
+            This can be a list representation of a bounding box or a WKT polygon.
+            Valid lists are ``min_lon max_lon min_lat max_lat`` for bounding
+            boxes and Well-Known Text (WKT) format for polygons.
+
+        bbox_select: str, default: flexible
+            Operator that specifies how the spatial extent is selected. Choose from
+            flexible (default), strict or file. ``strict`` returns only those files
+            that fully contain the query extent. The bbox search ``-10 10 -10 10``
+            will not select files covering only ``0 5 0 5`` with the ``strict``
+            method. ``flexible`` will select those files as it returns files that
+            have any overlap with the query extent. ``file`` will only return files
+            where the entire spatial extent is contained by the query geometry.
         extended_search: bool, default: False
             Retrieve information on additional search keys.
         host: str, default: None
@@ -494,6 +622,8 @@ class databrowser:
             flavour=flavour,
             time=time,
             time_select=time_select,
+            bbox=bbox,
+            bbox_select=bbox_select,
             host=host,
             multiversion=multiversion,
             fail_on_error=fail_on_error,
@@ -545,6 +675,8 @@ class databrowser:
         time: Optional[str] = None,
         host: Optional[str] = None,
         time_select: Literal["flexible", "strict", "file"] = "flexible",
+        bbox: Optional[Tuple[float, float, float, float]] = None,
+        bbox_select: Literal["flexible", "strict", "file"] = "flexible",
         multiversion: bool = False,
         fail_on_error: bool = False,
         extended_search: bool = False,
@@ -571,8 +703,11 @@ class databrowser:
             This can be a string representation of a time range or a single
             timestamp. The timestamp has to follow ISO-8601. Valid strings are
             ``%Y-%m-%dT%H:%M`` to ``%Y-%m-%dT%H:%M`` for time ranges and
-            ``%Y-%m-%dT%H:%M``. **Note**: You don't have to give the full string
-            format to subset time steps ``%Y``, ``%Y-%m`` etc are also valid.
+            ``%Y-%m-%dT%H:%M``.
+
+            .. note:: You don't have to give the full string format to subset time
+                    steps ``%Y``, ``%Y-%m`` etc are also valid.
+
         time_select: str, default: flexible
             Operator that specifies how the time period is selected. Choose from
             flexible (default), strict or file. ``strict`` returns only those files
@@ -582,6 +717,20 @@ class databrowser:
             ``flexible`` returns those files that have either start or end period
             covered. ``file`` will only return files where the entire time
             period is contained within *one single* file.
+        bbox: str, default: ""
+            Special search facet to refine/subset search results by spatial extent.
+            This can be a list representation of a bounding box or a WKT polygon.
+            Valid lists are ``min_lon max_lon min_lat max_lat`` for bounding
+            boxes and Well-Known Text (WKT) format for polygons.
+
+        bbox_select: str, default: flexible
+            Operator that specifies how the spatial extent is selected. Choose from
+            flexible (default), strict or file. ``strict`` returns only those files
+            that fully contain the query extent. The bbox search ``-10 10 -10 10``
+            will not select files covering only ``0 5 0 5`` with the ``strict``
+            method. ``flexible`` will select those files as it returns files that
+            have any overlap with the query extent. ``file`` will only return files
+            where the entire spatial extent is contained by the query geometry.
         extended_search: bool, default: False
             Retrieve information on additional search keys.
         multiversion: bool, default: False
@@ -672,6 +821,8 @@ class databrowser:
             flavour=flavour,
             time=time,
             time_select=time_select,
+            bbox=bbox,
+            bbox_select=bbox_select,
             host=host,
             multiversion=multiversion,
             fail_on_error=fail_on_error,

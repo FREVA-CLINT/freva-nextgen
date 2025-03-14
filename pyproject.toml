@@ -75,7 +75,7 @@ deps = -e ./freva-rest
        xarray
 
 commands =
-    pytest -vv --cov=freva-rest --cov=freva-client --cov=freva-data-portal-worker --cov-report=html:coverage_report --junitxml report.xml --cov-report xml tests/
+    pytest -vv --cov=freva-rest --cov=freva-client --cov=freva-data-portal-worker --cov-report=html:coverage_report --junitxml report.xml --cov-report xml tests
     python3 -m coverage report --fail-under=98.5 --precision=2
 [testenv:docs]
 description = "Create the documentation."
@@ -94,7 +94,7 @@ setenv =
     FREVA_NO_RICH_PANELS = 1
 allowlist_externals = make
 commands = make -C docs clean
-           make -C docs html
+           make -C docs html 
 [testenv:lint]
 description = "Check code quality."
 deps = -e ./freva-rest

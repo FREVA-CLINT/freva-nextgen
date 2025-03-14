@@ -112,3 +112,25 @@ client_id = "freva"
 # Secret key associated with the client ID. Keep this secure as it is used to
 # authenticate the API to the OIDC provider.
 client_secret = ""
+
+[stacapi]
+# (Optional) STAC API configuration for accessing SpatioTemporal Asset Catalogs (STAC).
+# This section defines settings for connecting to a STAC API, allowing the API
+# to query and retrieve metadata from STAC-compliant catalogs.
+
+# <USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<ROO_PATH> where the STAC API server is running.
+api_hostname = "http://stac:secret@localhost:8083"
+
+# <HOSTNAME>:<PORT>/<PREFIX> where the STAC Browsee server is running.
+browser_hostname = "https://radiantearth.github.io/stac-browser/#/external/http:/localhost:8083/"
+
+# Since ingestions are happening on the fly into OpenSearch and 
+# machine resources are limited, storage might become a bottleneck. 
+# To avoid this, you can set the maximum number of items that can 
+# be ingested into OpenSearch based on your machine's available storage 
+# resources or run the OpenSearch on a machine with a fair amount of 
+# storage. By default, this is set to 1000, but it can be adjusted 
+# according to the resources available on your machine.
+max_items = 1000
+
+

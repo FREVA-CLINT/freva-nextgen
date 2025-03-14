@@ -9,7 +9,6 @@ from freva_client import databrowser
 from freva_client.auth import Auth, authenticate
 from freva_client.utils.logger import DatabrowserWarning
 
-
 def test_search_files(test_server: str) -> None:
     """Test searching for files."""
     db = databrowser(host=test_server)
@@ -19,6 +18,8 @@ def test_search_files(test_server: str) -> None:
     with pytest.raises(ValueError):
         len(db)
     db = databrowser(host=test_server, foo="bar", time="2000 to 2050")
+    assert len(db) == 0
+    db = databrowser(host=test_server, foo="bar", bbox=(10, 20, 30, 40))
     assert len(db) == 0
     db = databrowser(host=test_server, model="bar")
     assert len(db) == len(list(db)) == 0
@@ -133,6 +134,27 @@ def test_intake_without_zarr(test_server: str) -> None:
     with pytest.raises(ValueError):
         db.intake_catalogue()
 
+def test_stac_catalogue(test_server: str) -> None:
+    """Test the STAC Catalogue functionality."""
+    # dynamic STAC catalogue
+    db = databrowser(host=test_server, dataset="cmip6-fs")
+    res = db.stac_catalogue()
+    assert "STAC catalog available at: " in res
+
+    # static STAC catalogue
+    db = databrowser(host=test_server, dataset="cmip6-fs")
+    res = db.stac_catalogue(filename="/tmp/something.tar.gz")
+    assert "STAC catalog saved to: /tmp/something.tar.gz" in res
+
+    # static STAC catalogue with non-existing directory
+    db = databrowser(host=test_server, dataset="cmip6-fs")
+    res = db.stac_catalogue(filename="/tmp/anywhere/s")
+    assert "STAC catalog saved to: /tmp/anywhere/s" in res
+
+    # static STAC catalogue with existing directory
+    db = databrowser(host=test_server, dataset="cmip6-fs")
+    res = db.stac_catalogue(filename="/tmp")
+    assert "STAC catalog saved to: /tmp" in res
 
 def test_intake_with_zarr(test_server: str, auth_instance: Auth) -> None:
     """Test the intake zarr catalogue creation."""
@@ -163,6 +185,7 @@ def test_zarr_stream(test_server: str, auth_instance: Auth) -> None:
             files = list(db)
         _ = authenticate(username="janedoe", host=test_server)
         files = list(db)
+        print(files)
         assert len(files) == 2
     finally:
         auth_instance._auth_token = token
