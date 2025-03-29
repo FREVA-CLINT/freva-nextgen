@@ -9,11 +9,15 @@ import rich.logging
 from rich.console import Console
 
 THIS_NAME: str = "freva-rest"
-LOG_DIR: Path = Path(os.environ.get("API_LOGDIR") or Path(f"/tmp/log/{THIS_NAME}"))
+LOG_DIR: Path = Path(
+    os.environ.get("API_LOGDIR") or Path(f"/tmp/log/{THIS_NAME}")
+)
 logfmt = "%(name)s - %(message)s"
 datefmt = "%Y-%m-%dT%H:%M"
 LOG_DIR.mkdir(exist_ok=True, parents=True)
-logger_format = logging.Formatter(logfmt, datefmt)
+logger_format = logging.Formatter(
+    "%(asctime)s %(levelname)s %(name)s - %(message)s", datefmt
+)
 logger_file_handle = RotatingFileHandler(
     LOG_DIR / f"{THIS_NAME}.log",
     mode="a",

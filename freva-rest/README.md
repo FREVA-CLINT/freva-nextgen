@@ -59,12 +59,15 @@ The container supports several startup modes:
 docker run \
     -e API_OIDC_DISCOVERY_URL=https://example-oicd.org/.well-known/openid-configuration \
     -p 7777:7777 \
+    -v my-data-dir:/var/data
     ghcr.io/freva-clint/freva-rest:latest
 
 # Start with custom freva-rest flags and access
 docker run \
         -e API_OIDC_DISCOVERY_URL=https://example-oicd.org/.well-known/openid-configuration \
         -p 8000:8000
+        -v my-data-dir:/var/data
+        -v my-log-dir:/var/log
        ghcr.io/freva-clint/freva-rest:latest -p 8000
 
 ```
@@ -141,10 +144,9 @@ The container can use several persistent volumes that should be mounted:
 docker run -d \
   --name freva-rest \
   -e {above envs} \
-  -v $(pwd)/mongodb_data:/data/db \
-  -v $(pwd)/solr_data:/var/solr \
+  -v $(pwd)/freva-rest-server/data:/var/data \
+  -v $(pwd)/freva-rest-server/logs:/var/log \
   -v $(pwd)/certs:/certs:ro \
-  -v $(pwd)/logs:/logs \
   -p 7777:7777 \
   -p 27017:27017 \
   -p 8983:8983 \
@@ -154,7 +156,7 @@ docker run -d \
 
 Create the necessary directories before starting the container:
 ```console
-mkdir -p {mongodb_data,solr_data,certs}
+mkdir -p {freva-rest-server/data,freva-rest-server/logs,certs}
 ```
 
 > [!NOTE]

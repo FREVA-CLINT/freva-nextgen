@@ -99,15 +99,11 @@ async def get_status(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required),
+    current_user: TokenPayload = Depends(auth.required_dependency()),
 ) -> JSONResponse:
     """Get the status of a loading process."""
-    meta: Dict[str, Any] = await read_redis_data(
-        uuid5, "status", timeout=timeout
-    )
-    return JSONResponse(
-        content={"status": meta}, status_code=status.HTTP_200_OK
-    )
+    meta: Dict[str, Any] = await read_redis_data(uuid5, "status", timeout=timeout)
+    return JSONResponse(content={"status": meta}, status_code=status.HTTP_200_OK)
 
 
 @app.get(
@@ -137,7 +133,7 @@ async def zemtadata(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required),
+    current_user: TokenPayload = Depends(auth.required_dependency()),
 ) -> JSONResponse:
     """Consolidate zarr metadata
 
@@ -182,7 +178,7 @@ async def zgroup(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required),
+    current_user: TokenPayload = Depends(auth.required_dependency()),
 ) -> JSONResponse:
     """Zarr group data.
 
@@ -228,7 +224,7 @@ async def zattrs(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required),
+    current_user: TokenPayload = Depends(auth.required_dependency()),
 ) -> JSONResponse:
     """Get zarr Attributes.
 
@@ -271,9 +267,7 @@ async def chunk_data(
     ],
     chunk: Annotated[
         str,
-        Path(
-            title="chunk", description="The chnuk number that should be read."
-        ),
+        Path(title="chunk", description="The chnuk number that should be read."),
     ],
     timeout: Annotated[
         int,
@@ -285,7 +279,7 @@ async def chunk_data(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required),
+    current_user: TokenPayload = Depends(auth.required_dependency()),
 ) -> Response:
     """Get a zarr array chunk.
 

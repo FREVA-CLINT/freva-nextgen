@@ -44,9 +44,7 @@ class ServerConfig(BaseModel):
         Union[str, Path],
         Field(
             title="API Config",
-            description=(
-                "Path to a .toml file holding the API" "configuration"
-            ),
+            description=("Path to a .toml file holding the API" "configuration"),
         ),
     ] = os.getenv("API_CONFIG", Path(__file__).parent / "api_config.toml")
     proxy: Annotated[
@@ -230,16 +228,12 @@ class ServerConfig(BaseModel):
         self.mongo_host = self.mongo_host or self._read_config(
             "mongo_db", "hostname"
         )
-        self.mongo_user = self.mongo_user or self._read_config(
-            "mongo_db", "user"
-        )
+        self.mongo_user = self.mongo_user or self._read_config("mongo_db", "user")
         self.mongo_password = self.mongo_password or self._read_config(
             "mongo_db", "password"
         )
         self.mongo_db = self.mongo_db or self._read_config("mongo_db", "name")
-        self.solr_host = self.solr_host or self._read_config(
-            "solr", "hostname"
-        )
+        self.solr_host = self.solr_host or self._read_config("solr", "hostname")
         self.solr_core = self.solr_core or self._read_config("solr", "core")
         self.redis_user = self.redis_user or self._read_config("cache", "user")
         self.redis_password = self.redis_password or self._read_config(
@@ -270,9 +264,7 @@ class ServerConfig(BaseModel):
     @property
     def services(self) -> Set[str]:
         """Define the services that are served."""
-        return set(
-            s.strip() for s in self.api_services.split(",") if s.strip()
-        )
+        return set(s.strip() for s in self.api_services.split(",") if s.strip())
 
     @property
     def redis_url(self) -> str:
@@ -392,7 +384,8 @@ class ServerConfig(BaseModel):
                 ] not in ("file_name", "file", "file_no_version"):
                     yield entry["name"]
         except (
-            requests.exceptions.ConnectionError
+            requests.exceptions.ConnectionError,
+            requests.exceptions.JSONDecodeError,
         ) as error:  # pragma: no cover
             logger.error(
                 "Connection to %s failed: %s", url, error

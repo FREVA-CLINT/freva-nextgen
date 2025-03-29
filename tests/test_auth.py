@@ -4,16 +4,33 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Dict
 
+import mock
 import pytest
 import requests
+from fastapi.exceptions import HTTPException
 from pytest_mock import MockFixture
 
 from freva_client.auth import Auth, authenticate
+from freva_rest.auth import SafeAuth
 
 
 def raise_for_status() -> None:
     """Mock function used for requests result rais_for_status method."""
     raise requests.HTTPError("Invalid")
+
+
+def test_missing_ocid_server(test_server: str) -> None:
+    """Test the behviour of a missing ocid server."""
+    for url in ("", "http://example.org/foo", "http://muhah.zupap"):
+        with mock.patch(
+            "freva_rest.auth.auth.discovery_url",
+            url,
+        ):
+            res = requests.get(
+                f"{test_server}/auth/v2/status",
+                headers={"Authorization": "Bearer foo"},
+            )
+            assert res.status_code == 503
 
 
 def test_authenticate_with_password(
@@ -27,9 +44,7 @@ def test_authenticate_with_password(
             "token_type": "Bearer",
             "expires": int(datetime.now(timezone.utc).timestamp() + 3600),
             "refresh_token": "test_refresh_token",
-            "refresh_expires": int(
-                datetime.now(timezone.utc).timestamp() + 7200
-            ),
+            "refresh_expires": int(datetime.now(timezone.utc).timestamp() + 7200),
             "scope": "profile email address",
         }
         with mocker.patch(
@@ -39,9 +54,7 @@ def test_authenticate_with_password(
             auth_instance.authenticate(host="https://example.com")
         assert isinstance(auth_instance._auth_token, dict)
         assert auth_instance._auth_token["access_token"] == "test_access_token"
-        assert (
-            auth_instance._auth_token["refresh_token"] == "test_refresh_token"
-        )
+        assert auth_instance._auth_token["refresh_token"] == "test_refresh_token"
     finally:
         auth_instance._auth_token = old_token_data
 
@@ -70,9 +83,7 @@ def test_authenticate_with_refresh_token(
 
         assert isinstance(auth_instance._auth_token, dict)
         assert auth_instance._auth_token["access_token"] == "test_access_token"
-        assert (
-            auth_instance._auth_token["refresh_token"] == "test_refresh_token"
-        )
+        assert auth_instance._auth_token["refresh_token"] == "test_refresh_token"
     finally:
         auth_instance._auth_token = old_token_data
 
@@ -106,16 +117,12 @@ def test_refresh_token(mocker: MockFixture, auth_instance: Auth) -> None:
 
         assert isinstance(auth_instance._auth_token, dict)
         assert auth_instance._auth_token["access_token"] == "new_access_token"
-        assert (
-            auth_instance._auth_token["refresh_token"] == "new_refresh_token"
-        )
+        assert auth_instance._auth_token["refresh_token"] == "new_refresh_token"
     finally:
         auth_instance._auth_token = old_token_data
 
 
-def test_authenticate_function(
-    mocker: MockFixture, auth_instance: Auth
-) -> None:
+def test_authenticate_function(mocker: MockFixture, auth_instance: Auth) -> None:
     """Test the authenticate function with username and password."""
     old_token_data = deepcopy(auth_instance._auth_token)
     token_data = {
@@ -272,7 +279,5 @@ def test_token_status(test_server: str, auth: Dict[str, str]) -> None:
 
 def test_get_overview(test_server: str) -> None:
     """Test the open id connect discovery endpoint."""
-    res = requests.get(
-        f"{test_server}/auth/v2/.well-known/openid-configuration"
-    )
+    res = requests.get(f"{test_server}/auth/v2/.well-known/openid-configuration")
     assert res.status_code == 200

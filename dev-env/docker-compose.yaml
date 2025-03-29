@@ -59,9 +59,6 @@ services:
       LDAP_DOMAIN: "example.com"
       LDAP_ADMIN_PASSWORD: "admin_password"
       LDAP_ADMIN_USERNAME: "admin"
-    ports:
-      - "389:389"
-      - "636:636"
     command: --copy-service
     hostname: ldap
     networks:

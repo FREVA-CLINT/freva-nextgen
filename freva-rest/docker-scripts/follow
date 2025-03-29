@@ -10,16 +10,16 @@ for service in "$@"; do
     service_lower=$(echo "$service" | tr '[:upper:]' '[:lower:]')
     case "${service_lower}" in
         "mongo"|"mongodb"|"mongod")
-            log_file="/logs/mongodb.log"
+            log_file="/var/log/mongodb/mongod.log"
             ;;
         "mysql"|"mysqld")
-            log_file="/logs/mysqld.log"
+            log_file="/var/log/mysqldb/mysqld.log"
             ;;
         "redis")
-            log_file="/logs/reids.log"
+            log_file="/var/log/cache/redis.log"
             ;;
         "solr")
-            log_file="/logs/solr.log"
+            log_file="/var/log/solr/solr.log"
             ;;
         "*")
             log_error "Error: '$service' is not a valid service. Allowed: ${VALID_SERVICES[*]}"
