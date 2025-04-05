@@ -75,6 +75,7 @@ deps = -e ./freva-rest
        pytest-env
        setuptools
        xarray
+       stac-check
 
 commands =
     pytest -vv --cov=freva-rest --cov=freva-client --cov=freva-data-portal-worker --cov-report=html:coverage_report --junitxml report.xml --cov-report xml tests/
@@ -96,7 +97,7 @@ setenv =
     FREVA_NO_RICH_PANELS = 1
 allowlist_externals = make
 commands = make -C docs clean
-           make -C docs html
+           make -C docs html 
 [testenv:lint]
 description = "Check code quality."
 deps = -e ./freva-rest

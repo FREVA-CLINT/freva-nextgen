@@ -149,6 +149,11 @@ class Config:
         return f"{self.databrowser_url}/intake-catalogue/{self.flavour}/{self.uniq_key}"
 
     @property
+    def stac_url(self) -> str:
+        """Define the url for creating stac catalogue."""
+        return f"{self.databrowser_url}/stac-catalogue/{self.flavour}/{self.uniq_key}"
+
+    @property
     def metadata_url(self) -> str:
         """Define the endpoint for the metadata search."""
         return (

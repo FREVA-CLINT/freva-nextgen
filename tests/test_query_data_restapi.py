@@ -142,6 +142,35 @@ def test_time_selection(test_server: str) -> None:
     )
     assert res3.status_code == 500
 
+def test_bbox_selection(test_server: str) -> None:
+    """Test the bbox select functionality of the API."""
+    res1 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-10,10,-10,10"},
+    )
+    assert len(res1.text.split()) == 61
+    res2 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-10,10,-10,10", "bbox_select": "foo"},
+    )
+    assert res2.status_code == 500
+    res3 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "fx"},
+    )
+    assert res3.status_code == 500
+
+    res3 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-181,181,-10,10"},
+    )
+    assert res3.status_code == 500
+
+    res4 = requests.get(
+        f"{test_server}/databrowser/data-search/freva/file",
+        params={"bbox": "-10,10,-91,91"},
+    )
+    assert res3.status_code == 500
 
 def test_primary_facets(test_server: str) -> None:
     """Test the functionality of primary facet definitions."""
@@ -292,6 +321,40 @@ def test_intake_search(test_server: str) -> None:
     )
     assert res4.status_code == 413
 
+
+def test_stac_catalogue(test_server: str) -> None:
+    """Test the creation of STAC Catalogue."""
+
+    # 200 OK from STAC static endpoint
+    res = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={
+            "activity_id": "cmip", 
+            "multi-version": True, 
+            "max_results": 2
+        },
+        allow_redirects=False
+    )
+    assert res.status_code == 200
+    
+    # 413 Request Entity Too Large
+    res3 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"activity_id": "cmip", "multi-version": False, "max-results": 1},
+    )
+    assert res3.status_code == 413
+    # 422 Unprocessable Entity
+    res4 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"collection": "cmip2", "multi-version": False},
+    )
+    assert res4.status_code == 422
+    # 404 Not Found
+    res5 = requests.get(
+        f"{test_server}/databrowser/stac-catalogue/cmip6/uri",
+        params={"activity_id": "cmip3", "multi-version": False},
+    )
+    assert res5.status_code == 404
 
 def test_bad_intake_request(test_server: str) -> None:
     """Test for a wrong intake request."""

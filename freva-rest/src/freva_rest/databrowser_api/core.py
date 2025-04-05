@@ -24,7 +24,7 @@ from typing import (
     cast,
 )
 
-import aiohttp
+import httpx
 from dateutil.parser import ParserError, parse
 from fastapi import HTTPException
 from pydantic import BaseModel
@@ -33,6 +33,7 @@ from typing_extensions import TypedDict
 
 from freva_rest import __version__
 from freva_rest.config import ServerConfig
+from freva_rest.exceptions import ValidationError
 from freva_rest.logger import logger
 from freva_rest.utils import create_redis_connection
 
@@ -165,6 +166,7 @@ class Translator:
             "rcm_version": "secondary",
             "dataset": "secondary",
             "time": "secondary",
+            "bbox": "secondary",
             "user": "secondary",
         }
 
@@ -183,6 +185,7 @@ class Translator:
             "realm": "realm",
             "variable": "variable",
             "time": "time",
+            "bbox": "bbox",
             "time_aggregation": "time_aggregation",
             "time_frequency": "time_frequency",
             "cmor_table": "cmor_table",
@@ -210,6 +213,7 @@ class Translator:
             "realm": "realm",
             "variable": "variable_id",
             "time": "time",
+            "bbox": "bbox",
             "time_aggregation": "time_aggregation",
             "time_frequency": "frequency",
             "cmor_table": "table_id",
@@ -237,6 +241,7 @@ class Translator:
             "realm": "realm",
             "variable": "variable",
             "time": "time",
+            "bbox": "bbox",
             "time_aggregation": "time_aggregation",
             "time_frequency": "time_frequency",
             "cmor_table": "cmor_table",
@@ -264,6 +269,7 @@ class Translator:
             "realm": "realm",
             "variable": "variable_id",
             "time": "time",
+            "bbox": "bbox",
             "time_aggregation": "time_reduction",
             "time_frequency": "time_frequency",
             "cmor_table": "cmor_table",
@@ -378,7 +384,7 @@ class Solr:
     uniq_keys: Tuple[str, str] = ("file", "uri")
     """The names of all unique keys in the indexing system."""
 
-    timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=30)
+    timeout: httpx.Timeout = httpx.Timeout(30)
     """30 seconds for timeout."""
 
     batch_size: int = 150
@@ -424,17 +430,18 @@ class Solr:
                 query.pop("time", [""])[0],
                 query.pop("time_select", ["flexible"])[0],
             )
+            self.bbox = self.adjust_bbox_string(
+                query.pop("bbox", [""])[0],
+                query.pop("bbox_select", ["flexible"])[0],
+            )
         except ValueError as err:
-            raise HTTPException(status_code=500, detail=str(err)) from err
+            raise HTTPException(
+                status_code=500, detail=str(err)
+            ) from err  # pragma: no cover
         self.facets = self.translator.translate_query(query, backwards=True)
         self.url, self.query = self._get_url()
         self.query["start"] = start
         self.query["sort"] = "file desc"
-
-        self.payload: Union[
-            List[Dict[str, Union[str, List[str], Dict[str, str]]]],
-            Dict[str, Union[str, List[str], Dict[str, str]]],
-        ] = []
         self.fwrites: Dict[str, str] = {}
         self.total_ingested_files = 0
         self.total_duplicated_files = 0
@@ -505,52 +512,58 @@ class Solr:
             self.uniq_key,
             self.query,
         )
-        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
-                async with session.get(self.url, params=self.query) as res:
-                    status = res.status
-                    try:
-                        await self.check_for_status(res)
-                        search = await res.json()
-                    except HTTPException:  # pragma: no cover
-                        search = {}  # pragma: no cover
+                response = await client.get(self.url, params=self.query)
+                status = response.status_code
+                try:
+                    await self.check_for_status(response)
+                    search = response.json()
+                except HTTPException:  # pragma: no cover
+                    search = {}  # pragma: no cover
             except Exception as error:
-                logger.error("Connection to %s failed: %s", self.url, error)
+                logger.exception("Connection to %s failed: %s", self.url, error)
                 raise HTTPException(
                     status_code=503,
-                    detail="Could not connect to search instance",
+                    detail="Could not connect to Solr server",
                 )
-        yield status, search
+            yield status, search
 
     @asynccontextmanager
-    async def _session_post(self) -> AsyncIterator[Tuple[int, Dict[str, Any]]]:
+    async def _session_post(
+        self,
+        url: str,
+        payload: Union[
+            Dict[str, Any],
+            List[Dict[Any, Any]],
+        ],
+    ) -> AsyncIterator[Tuple[int, Dict[str, Any]]]:
         """Wrap the post request round a try and catch statement."""
         logger.info(
-            "Sending POST request to %s for uniq_key: %s with payload: %s",
-            self._post_url,
-            self.uniq_key,
-            self.payload,
+            "Sending POST request to %s with payload: %s",
+            url,
+            payload,
         )
-        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
             try:
-                async with session.post(self._post_url, json=self.payload) as res:
-                    try:
-                        await self.check_for_status(res)
-                        logger.info(
-                            "POST request successful with status: %d",
-                            res.status,
-                        )
-                        response_data = await res.json()
-                    except HTTPException:  # pragma: no cover
-                        logger.error("POST request failed: %s", await res.text())
-                        response_data = {}
+                response = await client.post(url, json=payload)
+                try:
+                    await self.check_for_status(response)
+                    logger.info(
+                        "POST request successful with status: %d",
+                        response.status_code,
+                    )
+                    response_data = response.json()
+                except HTTPException:  # pragma: no cover
+                    logger.error("POST request failed: %s", response.text)
+                    response_data = {}
             except Exception as error:
-                logger.error("Connection to %s failed: %s", self.url, error)
+                logger.exception("Connection to %s failed: %s", url, error)
                 raise HTTPException(
                     status_code=503,
                     detail="Could not connect to Solr POST endpoint",
                 )
-        yield res.status, response_data
+            yield response.status_code, response_data
 
     @classmethod
     async def validate_parameters(
@@ -593,11 +606,10 @@ class Solr:
             key = key.lower().replace("_not_", "")
             if (
                 key not in valid_facets
-                and key not in ("time_select",) + cls.uniq_keys
+                and key not in ("time_select", "bbox_select")
+                + cls.uniq_keys
             ):
-                raise HTTPException(
-                    status_code=422, detail="Could not validate input."
-                )
+                raise HTTPException(status_code=422, detail="Could not validate input.")
         return Solr(
             config,
             flavour=flavour,
@@ -638,7 +650,7 @@ class Solr:
 
         Raises
         ------
-        ValueError: If parsing the dates failed.
+        ValidationError: If parsing the dates failed or if time_select is invalid.
         """
         if not time:
             return []
@@ -652,18 +664,75 @@ class Solr:
             solr_select = select_methods[time_select]
         except KeyError as exc:
             methods = ", ".join(select_methods.keys())
-            raise ValueError(f"Choose `time_select` from {methods}") from exc
+            raise ValidationError(f"Choose `time_select` from {methods}") from exc
         start, _, end = time.lower().partition("to")
         try:
-            start = parse(
-                start or "1", default=datetime(1, 1, 1, 0, 0, 0)
-            ).isoformat()
+            start = parse(start or "1", default=datetime(1, 1, 1, 0, 0, 0)).isoformat()
             end = parse(
                 end or "9999", default=datetime(9999, 12, 31, 23, 59, 59)
             ).isoformat()
         except ParserError as exc:
-            raise ValueError(exc) from exc
+            raise ValidationError(exc) from exc
         return [f"{{!field f=time op={solr_select}}}[{start} TO {end}]"]
+
+    @staticmethod
+    def adjust_bbox_string(
+        bbox: str,
+        bbox_select: str = "flexible",
+    ) -> List[str]:
+        """Adjust the bbox select keys to a solr spatial query using RPT
+        (Recursive Prefix Tree)
+
+        Parameters
+        ----------
+
+        bbox: str, default: ""
+            Special search facet to refine/subset search results by spatial extent.
+            This can be a list of string or numeral representation of a bounding box
+            or a WKT polygon.
+            Valid lists are ``min_lon,max_lon,min_lat,max_lat`` for bounding
+            boxes and Well-Known Text (WKT) format for polygons. **Note**: Longitude
+            values must be between -180 and 180, latitude values between -90 and 90.
+        bbox_select: str, default: flexible
+            Operator that specifies how the spatial extent is selected. Choose from
+            flexible (default), strict or file. ``strict`` returns only those files
+            that fully contain the query extent. The bbox search ``-10,10,-10,10``
+            will not select files covering only ``0,5,0,5`` with the ``strict``
+            method. ``flexible`` will select those files as it returns files that
+            have any overlap with the query extent. ``file`` will only return files
+            where the entire spatial extent is contained by the query geometry.
+
+        Raises
+        ------
+        ValidationError: If parsing the coordinates failed, if bbox_select is invalid
+                        or if the coordinates are out of bounds.
+        """
+        if not bbox:
+            return []
+        bbox = "".join(part.strip() for part in bbox.split())
+        select_methods: dict[str, str] = {
+            "strict": "Within",
+            "flexible": "Intersects",
+            "file": "Contains",
+        }
+        try:
+            solr_select = select_methods[bbox_select.lower()]
+        except KeyError as exc:
+            methods = ", ".join(select_methods.keys())
+            raise ValidationError(f"Choose `bbox_select` from {methods}") from exc
+
+        try:
+            min_lon, max_lon, min_lat, max_lat = bbox.split(",")
+
+            if not (-180 <= float(min_lon) <= 180 and -180 <= float(max_lon) <= 180):
+                raise ValidationError("Longitude must be between -180 and 180")
+            if not (-90 <= float(min_lat) <= 90 and -90 <= float(max_lat) <= 90):
+                raise ValidationError("Latitude must be between -90 and 90")
+
+            bbox_str = f"ENVELOPE({min_lon},{max_lon},{max_lat},{min_lat})"
+            return [f'bbox:"{solr_select}({bbox_str})"']
+        except ValueError as exc:
+            raise ValidationError(f"Failed to parse bbox string: {exc}") from exc
 
     async def _create_intake_catalogue(self, *facets: str) -> IntakeType:
         var_name = self.translator.forward_lookup["variable"]
@@ -726,9 +795,7 @@ class Solr:
             catalogue=catalogue, total_count=total_count
         )
 
-    async def _delete_from_mongo(
-        self, search_keys: Dict[str, Union[str, int]]
-    ) -> None:
+    async def _delete_from_mongo(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Delete bulk user metadata from MongoDB based on the search keys.
 
@@ -737,10 +804,6 @@ class Solr:
         search_keys: Dict[str, str]
             A dictionariy containing search keys used to identify
             data for deletion.
-
-        Returns
-        -------
-        None
         """
         try:
             query = {
@@ -752,9 +815,7 @@ class Solr:
         except Exception as error:
             logger.warning("[MONGO] Could not remove metadata: %s", error)
 
-    async def _insert_to_mongo(
-        self, metadata_batch: List[Dict[str, Any]]
-    ) -> None:
+    async def _insert_to_mongo(self, metadata_batch: List[Dict[str, Any]]) -> None:
         """
         Bulk upsert user metadata into MongoDB.
 
@@ -762,10 +823,6 @@ class Solr:
         ----------
         metadata_batch: List[Dict[str, Any]]
             A list of dictionaries containing metadata to insert into MongoDB.
-
-        Returns
-        -------
-        None
         """
         bulk_operations = []
 
@@ -773,9 +830,7 @@ class Solr:
             filter_query = {"file": metadata["file"], "uri": metadata["uri"]}
             update_query = {"$set": metadata}
 
-            bulk_operations.append(
-                UpdateOne(filter_query, update_query, upsert=True)
-            )
+            bulk_operations.append(UpdateOne(filter_query, update_query, upsert=True))
         if bulk_operations:
             try:
                 result = await self._config.mongo_collection_userdata.bulk_write(
@@ -852,9 +907,7 @@ class Solr:
         except Exception as error:
             logger.warning("Could not add stats to mongodb: %s", error)
 
-    def _process_catalogue_result(
-        self, out: Dict[str, List[Sized]]
-    ) -> Dict[str, Any]:
+    def _process_catalogue_result(self, out: Dict[str, List[Sized]]) -> Dict[str, Any]:
         return {
             k: (
                 out[k][0]
@@ -1015,13 +1068,21 @@ class Solr:
                 query.append(f"-{key}:({query_neg})")
         # Cause we are adding a new query which effects
         # all queries, it might be a neckbottle of performance
-        if self.translator.flavour == "user":
-            user_query = "user:*"
-        else:
-            user_query = "{!ex=userTag}-user:*"
+        user_query = (
+            "user:*" if self.translator.flavour == "user" else "{!ex=userTag}-user:*"
+        )
+        base_query = "*:*" if not (self.time or self.bbox) else None
+        joined_query = " AND ".join(query) if query else base_query
+
+        filter_queries = [
+            *self.time,
+            *self.bbox,
+            user_query,
+            joined_query,
+        ]
         return url, {
             "q": "*:*",
-            "fq": self.time + ["", user_query, " AND ".join(query) or "*:*"],
+            "fq": [q for q in filter_queries if q],
         }
 
     @property
@@ -1039,23 +1100,21 @@ class Solr:
         )
         return url
 
-    async def check_for_status(
-        self, response: aiohttp.client_reqrep.ClientResponse
-    ) -> None:
+    async def check_for_status(self, response: httpx.Response) -> None:
         """Check if a query was successful
 
         Parameters
         ----------
-        response: aiohttp.client_reqrep.ClientResponse
+        response: httpx.Response
             The response of the rest query.
 
         Raises
         ------
         fastapi.HTTPException: If anything went wrong an error is risen
         """
-        if response.status not in (200, 201):
+        if response.status_code not in (200, 201):
             raise HTTPException(
-                status_code=response.status, detail=response.text
+                status_code=response.status_code, detail=response.text
             )  # pragma: no cover
 
     async def _solr_page_response(self) -> AsyncIterator[Dict[str, Any]]:
@@ -1111,9 +1170,7 @@ class Solr:
                 cache = await create_redis_connection()
                 await cache.publish(
                     "data-portal",
-                    json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode(
-                        "utf-8"
-                    ),
+                    json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode("utf-8"),
                 )
             except Exception as error:
                 logger.error("Cloud not connect to redis: %s", error)
@@ -1126,9 +1183,7 @@ class Solr:
                     suffix = ","
                 else:
                     suffix = ""
-                output = json.dumps(
-                    self._process_catalogue_result(result), indent=3
-                )
+                output = json.dumps(self._process_catalogue_result(result), indent=3)
                 prefix = "   "
             num += 1
             yield f"{prefix}{output}{suffix}\n"
@@ -1155,14 +1210,11 @@ class Solr:
         """
 
         for metadata in metadata_batch:
-            self.payload = [metadata]
-            async with self._session_post() as (status, _):
+            async with self._session_post(self._post_url, [metadata]) as (status, _):
                 if status == 200:
                     self.total_ingested_files += 1
 
-    async def _delete_from_solr(
-        self, search_keys: Dict[str, Union[str, int]]
-    ) -> None:
+    async def _delete_from_solr(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Delete user data from Apache Solr based on search keys.
 
@@ -1193,13 +1245,10 @@ class Solr:
                 escaped_value = escape_special_chars(str(value).lower())
                 query_parts.append(f"{key_lower}:{escaped_value}")
         query_str = " AND ".join(query_parts)
-        self.payload = {"delete": {"query": query_str}}
-        async with self._session_post():
+        async with self._session_post(self._post_url, {"delete": {"query": query_str}}):
             pass
 
-    async def _ingest_user_metadata(
-        self, user_metadata: List[Dict[str, Any]]
-    ) -> None:
+    async def _ingest_user_metadata(self, user_metadata: List[Dict[str, Any]]) -> None:
         """
         Ingest validated user metadata.
 
@@ -1216,7 +1265,7 @@ class Solr:
             {**metadata, **self.fwrites} for metadata in user_metadata
         ]
         for i in range(0, len(processed_metadata), self.batch_size):
-            batch = processed_metadata[i:i + self.batch_size]
+            batch = processed_metadata[i: i + self.batch_size]
             processed_batch = await self._process_metadata(batch)
             self.total_duplicated_files += len(batch) - len(processed_batch)
             if processed_batch:
@@ -1235,16 +1284,12 @@ class Solr:
 
             if not uri and not file_path:
                 continue
-            is_duplicate = await self._is_query_duplicate(
-                str(uri), str(file_path)
-            )
+            is_duplicate = await self._is_query_duplicate(str(uri), str(file_path))
             if not is_duplicate:
                 new_querie.append(metadata)
         return [dict(t) for t in {tuple(sorted(d.items())) for d in new_querie}]
 
-    async def _purge_user_data(
-        self, search_keys: Dict[str, Union[str, int]]
-    ) -> None:
+    async def _purge_user_data(self, search_keys: Dict[str, Union[str, int]]) -> None:
         """
         Purge the user data from both the Apache Solr search system and MongoDB.
 
@@ -1363,6 +1408,4 @@ class Solr:
         """
         search_keys["user"] = user_name
         await self._purge_user_data(search_keys)
-        logger.info(
-            "Deleted files from Solr and MongoDB with keys: %s", search_keys
-        )
+        logger.info("Deleted files from Solr and MongoDB with keys: %s", search_keys)

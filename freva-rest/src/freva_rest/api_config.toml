@@ -112,3 +112,5 @@ client_id = "freva"
 # Secret key associated with the client ID. Keep this secure as it is used to
 # authenticate the API to the OIDC provider.
 client_secret = ""
+
+

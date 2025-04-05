@@ -7,7 +7,7 @@ import json
 from enum import Enum
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict, List, Literal, Optional, Union, cast
+from typing import Dict, List, Literal, Optional, Tuple, Union, cast
 
 import typer
 import xarray as xr
@@ -47,7 +47,7 @@ class Flavours(str, Enum):
     user = "user"
 
 
-class TimeSelect(str, Enum):
+class SelectMethod(str, Enum):
     """Literal implementation for the cli."""
 
     strict = "strict"
@@ -55,18 +55,44 @@ class TimeSelect(str, Enum):
     file = "file"
 
     @staticmethod
-    def get_help() -> str:
-        """Generate the help string."""
+    def get_help(context: str) -> str:
+        """Generate the help string for time or bbox selection methods.
+
+        Parameters
+        ----------
+        context: str, default: "time"
+            Either "time" or "bbox" to generate appropriate help text.
+        """
+        examples = {
+            "time": ("2000 to 2012", "2010 to 2020"),
+            "bbox": ("-10 10 -10 10", "0 5 0 5")
+        }
+        descriptions = {
+            "time": {
+                "unit": "time period",
+                "start_end": "start or end period",
+                "subset": "time period"
+            },
+            "bbox": {
+                "unit": "spatial extent",
+                "start_end": "any part of the extent",
+                "subset": "spatial extent"
+            }
+        }
+
+        context_info = descriptions.get(context, descriptions["time"])
+        example = examples.get(context, examples["time"])
+
         return (
-            "Operator that specifies how the time period is selected. "
+            f"Operator that specifies how the {context_info['unit']} is selected. "
             "Choose from flexible (default), strict or file. "
             "``strict`` returns only those files that have the *entire* "
-            "time period covered. The time search ``2000 to 2012`` will "
-            "not select files containing data from 2010 to 2020 with "
-            "the ``strict`` method. ``flexible`` will select those files "
-            "as  ``flexible`` returns those files that have either start "
-            "or end period covered. ``file`` will only return files where "
-            "the entire time period is contained within *one single* file."
+            f"{context_info['unit']} covered. The {context} search ``{example[0]}`` "
+            f"will not select files containing data from {example[1]} with "
+            "the ``strict`` method. ``flexible`` will select those files as "
+            f"``flexible`` returns those files that have {context_info['start_end']} "
+            f"covered. ``file`` will only return files where the entire "
+            f"{context_info['subset']} is contained within *one single* file."
         )
 
 
@@ -124,11 +150,11 @@ def metadata_search(
             "of climate datasets to query."
         ),
     ),
-    time_select: TimeSelect = typer.Option(
+    time_select: SelectMethod = typer.Option(
         "flexible",
         "-ts",
         "--time-select",
-        help=TimeSelect.get_help(),
+        help=SelectMethod.get_help("time"),
     ),
     time: Optional[str] = typer.Option(
         None,
@@ -143,6 +169,24 @@ def metadata_search(
             "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
             " valid."
         ),
+    ),
+    bbox: Optional[Tuple[float, float, float, float]] = typer.Option(
+        None,
+        "-b",
+        "--bbox",
+        help=(
+            "Special search facet to refine/subset search results by spatial "
+            "extent. This can be a string representation of a bounding box. "
+            "The bounding box has to follow the format ``min_lon max_lon "
+            "min_lat,max_lat``. Valid strings are ``-10 10 -10 10`` to "
+            "``0 5 0 5``."
+        ),
+    ),
+    bbox_select: SelectMethod = typer.Option(
+        "flexible",
+        "-bs",
+        "--bbox-select",
+        help=SelectMethod.get_help("bbox"),
     ),
     extended_search: bool = typer.Option(
         False,
@@ -188,9 +232,9 @@ def metadata_search(
     result = databrowser.metadata_search(
         *(facets or []),
         time=time or "",
-        time_select=cast(
-            Literal["file", "flexible", "strict"], time_select.value
-        ),
+        time_select=cast(Literal["file", "flexible", "strict"], time_select.value),
+        bbox=bbox or None,
+        bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select.value),
         flavour=cast(
             Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
             flavour.value,
@@ -248,11 +292,11 @@ def data_search(
             "of climate datasets to query."
         ),
     ),
-    time_select: TimeSelect = typer.Option(
+    time_select: SelectMethod = typer.Option(
         "flexible",
         "-ts",
         "--time-select",
-        help=TimeSelect.get_help(),
+        help=SelectMethod.get_help("time"),
     ),
     zarr: bool = typer.Option(False, "--zarr", help="Create zarr stream files."),
     access_token: Optional[str] = typer.Option(
@@ -276,6 +320,24 @@ def data_search(
             "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
             " valid."
         ),
+    ),
+    bbox: Optional[Tuple[float, float, float, float]] = typer.Option(
+        None,
+        "-b",
+        "--bbox",
+        help=(
+            "Special search facet to refine/subset search results by spatial "
+            "extent. This can be a string representation of a bounding box. "
+            "The bounding box has to follow the format ``min_lon max_lon "
+            "min_lat max_lat``. Valid strings are ``-10 10 -10 10`` to "
+            "``0 5 0 5``."
+        ),
+    ),
+    bbox_select: SelectMethod = typer.Option(
+        "flexible",
+        "-bs",
+        "--bbox-select",
+        help=SelectMethod.get_help("bbox"),
     ),
     parse_json: bool = typer.Option(
         False, "-j", "--json", help="Parse output in json format."
@@ -314,6 +376,8 @@ def data_search(
         *(facets or []),
         time=time or "",
         time_select=cast(Literal["file", "flexible", "strict"], time_select),
+        bbox=bbox or None,
+        bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select),
         flavour=cast(
             Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
             flavour.value,
@@ -374,11 +438,11 @@ def intake_catalogue(
             "of climate datasets to query."
         ),
     ),
-    time_select: TimeSelect = typer.Option(
+    time_select: SelectMethod = typer.Option(
         "flexible",
         "-ts",
         "--time-select",
-        help=TimeSelect.get_help(),
+        help=SelectMethod.get_help("time"),
     ),
     time: Optional[str] = typer.Option(
         None,
@@ -393,6 +457,24 @@ def intake_catalogue(
             "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
             " valid."
         ),
+    ),
+    bbox: Optional[Tuple[float, float, float, float]] = typer.Option(
+        None,
+        "-b",
+        "--bbox",
+        help=(
+            "Special search facet to refine/subset search results by spatial "
+            "extent. This can be a string representation of a bounding box. "
+            "The bounding box has to follow the format ``min_lon max_lon "
+            "min_lat max_lat``. Valid strings are ``-10 10 -10 10`` to "
+            "``0 5 0 5``."
+        ),
+    ),
+    bbox_select: SelectMethod = typer.Option(
+        "flexible",
+        "-bs",
+        "--bbox-select",
+        help=SelectMethod.get_help("bbox"),
     ),
     zarr: bool = typer.Option(
         False, "--zarr", help="Create zarr stream files, as catalogue targets."
@@ -445,6 +527,8 @@ def intake_catalogue(
         *(facets or []),
         time=time or "",
         time_select=cast(Literal["file", "flexible", "strict"], time_select),
+        bbox=bbox or None,
+        bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select),
         flavour=cast(
             Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
             flavour.value,
@@ -462,6 +546,142 @@ def intake_catalogue(
         result._create_intake_catalogue_file(str(filename or temp_f.name))
         if not filename:
             print(Path(temp_f.name).read_text())
+
+
+@databrowser_app.command(
+    name="stac-catalogue",
+    help="Create a static STAC catalogue from the search."
+)
+@exception_handler
+def stac_catalogue(
+    search_keys: Optional[List[str]] = typer.Argument(
+        default=None,
+        help="Refine your data search with this `key=value` pair search "
+        "parameters. The parameters could be, depending on the DRS standard, "
+        "flavour product, project model etc.",
+    ),
+    facets: Optional[List[str]] = typer.Option(
+        None,
+        "--facet",
+        help=(
+            "If you are not sure about the correct search key's you can use"
+            " the ``--facet`` flag to search of any matching entries. For "
+            "example --facet 'era5' would allow you to search for any entries"
+            " containing era5, regardless of project, product etc."
+        ),
+    ),
+    uniq_key: UniqKeys = typer.Option(
+        "file",
+        "--uniq-key",
+        "-u",
+        help=(
+            "The type of search result, which can be either “file” "
+            "or “uri”. This parameter determines whether the search will be "
+            "based on file paths or Uniform Resource Identifiers"
+        ),
+    ),
+    flavour: Flavours = typer.Option(
+        "freva",
+        "--flavour",
+        "-f",
+        help=(
+            "The Data Reference Syntax (DRS) standard specifying the type "
+            "of climate datasets to query."
+        ),
+    ),
+    time_select: SelectMethod = typer.Option(
+        "flexible",
+        "-ts",
+        "--time-select",
+        help=SelectMethod.get_help("time"),
+    ),
+    time: Optional[str] = typer.Option(
+        None,
+        "-t",
+        "--time",
+        help=(
+            "Special search facet to refine/subset search results by time. "
+            "This can be a string representation of a time range or a single "
+            "time step. The time steps have to follow ISO-8601. Valid strings "
+            "are ``%Y-%m-%dT%H:%M`` to ``%Y-%m-%dT%H:%M`` for time ranges and "
+            "``%Y-%m-%dT%H:%M``. **Note**: You don't have to give the full "
+            "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
+            " valid."
+        ),
+    ),
+    bbox: Optional[Tuple[float, float, float, float]] = typer.Option(
+        None,
+        "-b",
+        "--bbox",
+        help=(
+            "Special search facet to refine/subset search results by spatial "
+            "extent. This can be a string representation of a bounding box. "
+            "The bounding box has to follow the format ``min_lon max_lon "
+            "min_lat max_lat``. Valid strings are ``-10 10 -10 10`` to "
+            "``0 5 0 5``."
+        ),
+    ),
+    bbox_select: SelectMethod = typer.Option(
+        "flexible",
+        "-bs",
+        "--bbox-select",
+        help=SelectMethod.get_help("bbox"),
+    ),
+    host: Optional[str] = typer.Option(
+        None,
+        "--host",
+        help=(
+            "Set the hostname of the databrowser, if not set (default) "
+            "the hostname is read from a config file"
+        ),
+    ),
+    verbose: int = typer.Option(0, "-v", help="Increase verbosity", count=True),
+    multiversion: bool = typer.Option(
+        False,
+        "--multi-version",
+        help="Select all versions and not just the latest version (default).",
+    ),
+    version: Optional[bool] = typer.Option(
+        False,
+        "-V",
+        "--version",
+        help="Show version an exit",
+        callback=version_callback,
+    ),
+    filename: Optional[Path] = typer.Option(
+        None,
+        "-o",
+        "--filename",
+        help=(
+            "Path to the file where the static STAC catalogue, "
+            "should be written to. If you don't specify or the path "
+            "does not exist, the file will be created in the current "
+            "working directory. "
+        ),
+    ),
+) -> None:
+    """Create a STAC catalogue for climate datasets based on the specified
+    Data Reference Syntax (DRS) standard (flavour) and the type of search
+    result (uniq_key), which can be either "file" or "uri"."""
+    logger.set_verbosity(verbose)
+    result = databrowser(
+        *(facets or []),
+        time=time or "",
+        time_select=cast(Literal["file", "flexible", "strict"], time_select),
+        bbox=bbox or None,
+        bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select),
+        flavour=cast(
+            Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
+            flavour.value,
+        ),
+        uniq_key=cast(Literal["uri", "file"], uniq_key.value),
+        host=host,
+        fail_on_error=False,
+        multiversion=multiversion,
+        stream_zarr=False,
+        **(parse_cli_args(search_keys or [])),
+    )
+    print(result.stac_catalogue(filename=filename))
 
 
 @databrowser_app.command(
@@ -500,11 +720,11 @@ def count_values(
             "of climate datasets to query."
         ),
     ),
-    time_select: TimeSelect = typer.Option(
+    time_select: SelectMethod = typer.Option(
         "flexible",
         "-ts",
         "--time-select",
-        help=TimeSelect.get_help(),
+        help=SelectMethod.get_help("time"),
     ),
     time: Optional[str] = typer.Option(
         None,
@@ -519,6 +739,24 @@ def count_values(
             "string format to subset time steps ``%Y``, ``%Y-%m`` etc are also"
             " valid."
         ),
+    ),
+    bbox: Optional[Tuple[float, float, float, float]] = typer.Option(
+        None,
+        "-b",
+        "--bbox",
+        help=(
+            "Special search facet to refine/subset search results by spatial "
+            "extent. This can be a string representation of a bounding box. "
+            "The bounding box has to follow the format ``min_lon max_lon "
+            "min_lat max_lat``. Valid strings are ``-10 10 -10 10`` to "
+            "``0 5 0 5``."
+        ),
+    ),
+    bbox_select: SelectMethod = typer.Option(
+        "flexible",
+        "-bs",
+        "--bbox-select",
+        help=SelectMethod.get_help("bbox"),
     ),
     extended_search: bool = typer.Option(
         False,
@@ -564,12 +802,16 @@ def count_values(
     result: Union[int, Dict[str, Dict[str, int]]] = 0
     search_kws = parse_cli_args(search_keys or [])
     time = cast(str, time or search_kws.pop("time", ""))
+    bbox = cast(Optional[Tuple[float, float, float, float]],
+                bbox or search_kws.pop("bbox", None))
     facets = facets or []
     if detail:
         result = databrowser.count_values(
             *facets,
             time=time or "",
             time_select=cast(Literal["file", "flexible", "strict"], time_select),
+            bbox=bbox or None,
+            bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select),
             flavour=cast(
                 Literal["freva", "cmip6", "cmip5", "cordex", "nextgems", "user"],
                 flavour.value,
@@ -585,9 +827,9 @@ def count_values(
             databrowser(
                 *facets,
                 time=time or "",
-                time_select=cast(
-                    Literal["file", "flexible", "strict"], time_select
-                ),
+                time_select=cast(Literal["file", "flexible", "strict"], time_select),
+                bbox=bbox or None,
+                bbox_select=cast(Literal["file", "flexible", "strict"], bbox_select),
                 flavour=cast(
                     Literal[
                         "freva", "cmip6", "cmip5", "cordex", "nextgems", "user"
