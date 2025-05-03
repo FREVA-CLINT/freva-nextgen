@@ -19,8 +19,8 @@ run_freva_rest() {
     if [ "${CACHE_CONFIG:-}" ];then
         echo $CACHE_CONFIG | base64 --decode | jq -r .ssl_cert > $API_REDIS_SSL_CERTFILE
         echo $CACHE_CONFIG | base64 --decode | jq -r .ssl_key > $API_REDIS_SSL_KEYFILE
-        export $API_REDIS_USER=$(echo $CACHE_CONFIG | base64 --decode | jq -r .user)
-        export $API_REDIS_PASSWORD=$(echo $CACHE_CONFIG | base64 --decode | jq -r .passwd)
+        export API_REDIS_USER=$(echo $CACHE_CONFIG | base64 --decode | jq -r .user)
+        export API_REDIS_PASSWORD=$(echo $CACHE_CONFIG | base64 --decode | jq -r .passwd)
     fi
     python3 -m freva_rest.cli "$@"
 }
