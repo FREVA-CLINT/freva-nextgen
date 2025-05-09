@@ -26,11 +26,17 @@ def test_missing_ocid_server(test_server: str) -> None:
             "freva_rest.auth.auth.discovery_url",
             url,
         ):
-            res = requests.get(
+            res1 = requests.get(
                 f"{test_server}/auth/v2/status",
                 headers={"Authorization": "Bearer foo"},
             )
-            assert res.status_code == 503
+            assert res1.status_code == 503
+            # mock the optional auth in extended search endpoint
+            res2 = requests.get(
+                f"{test_server}/databrowser/extended-search/cmip6/uri",
+                headers={"Authorization": "Bearer foo"},
+            )
+            assert res2.status_code == 200
 
 
 def test_authenticate_with_password(

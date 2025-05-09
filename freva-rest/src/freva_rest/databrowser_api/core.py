@@ -606,7 +606,7 @@ class Solr:
             key = key.lower().replace("_not_", "")
             if (
                 key not in valid_facets
-                and key not in ("time_select", "bbox_select")
+                and key not in ("time_select", "bbox_select", "zarr_stream")
                 + cls.uniq_keys
             ):
                 raise HTTPException(status_code=422, detail="Could not validate input.")
@@ -958,6 +958,7 @@ class Solr:
         self,
         facets: List[str],
         max_results: int,
+        zarr_stream: bool = False,
     ) -> Tuple[int, SearchResult]:
         """Initialise the apache solr metadata search.
 
@@ -980,6 +981,7 @@ class Solr:
         self.query["facet.field"] = self.translator.translate_facets(
             search_facets, backwards=True
         )
+
         self.query["fl"] = [self.uniq_key, "fs_type"]
         logger.info(
             "Query %s for uniq_key: %s with %s",
@@ -987,21 +989,22 @@ class Solr:
             self.uniq_key,
             self.query,
         )
-
         async with self._session_get() as res:
             search_status, search = res
+
+        docs = search.get("response", {}).get("docs", [])
+
+        if zarr_stream and docs:
+            for doc in docs:
+                zarr_path = await self.publish_to_zarr_stream(doc)
+                doc[self.uniq_key] = zarr_path
+                doc["fs_type"] = doc.get("fs_type", "posix")
         return search_status, SearchResult(
             total_count=search.get("response", {}).get("numFound", 0),
             facets=self.translator.translate_query(
                 search.get("facet_counts", {}).get("facet_fields", {})
             ),
-            search_results=[
-                {
-                    **{self.uniq_key: k[self.uniq_key]},
-                    **{"fs_type": k.get("fs_type", "posix")},
-                }
-                for k in search.get("response", {}).get("docs", [])
-            ],
+            search_results=docs,
             facet_mapping={
                 k: self.translator.forward_lookup[k]
                 for k in self.query["facet.field"]
@@ -1058,8 +1061,12 @@ class Solr:
             False: self._config.solr_cores[-1],
         }[self.multi_version]
         url = f"{self._config.get_core_url(core)}/select/"
+        valid_facets = {
+            k: v for k, v in self.facets.items()
+            if k != "zarr_stream"
+        }
         query = []
-        for key, value in self.facets.items():
+        for key, value in valid_facets.items():
             query_pos, query_neg = self._join_facet_queries(key, value)
             key = key.lower().replace("_not_", "")
             if query_pos:
@@ -1140,6 +1147,36 @@ class Solr:
         async for result in self._solr_page_response():
             yield f"{result[self.uniq_key]}\n"
 
+    async def publish_to_zarr_stream(
+        self,
+        doc: Dict[str, Any]
+    ) -> str:
+        """Publish URI to Redis for zarr streaming.
+
+        Parameters
+        ----------
+        doc: Dict[str, Any]
+            Document containing the URI to be published
+
+        Returns
+        -------
+        str:
+            The zarr stream path or error message
+        """
+        api_path = f"{self._config.proxy}/api/freva-nextgen/data-portal/zarr"
+        uri = doc[self.uniq_key]
+        uuid5 = str(uuid.uuid5(uuid.NAMESPACE_URL, uri))
+        try:
+            cache = await create_redis_connection()
+            await cache.publish(
+                "data-portal",
+                json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode("utf-8"),
+            )
+            return f"{api_path}/{uuid5}.zarr"
+        except Exception as pub_err:
+            logger.error("Failed to publish to Redis for %s: %s", uri, pub_err)
+            return "Internal error, service not able to publish"
+
     async def zarr_response(
         self,
         catalogue_type: Literal["intake", None],
@@ -1155,36 +1192,37 @@ class Solr:
         -------
         AsyncIterator: Stream of search results.
         """
-        api_path = f"{self._config.proxy}/api/freva-nextgen/data-portal/zarr"
         if catalogue_type == "intake":
             _, intake = await self.init_intake_catalogue()
             async for string in self.intake_catalogue(intake.catalogue, True):
                 yield string
             yield ',\n   "catalog_dict": ['
+
         num = 1
         async for result in self._solr_page_response():
             prefix = suffix = ""
-            uri = result[self.uniq_key]
-            uuid5 = str(uuid.uuid5(uuid.NAMESPACE_URL, uri))
-            try:
-                cache = await create_redis_connection()
-                await cache.publish(
-                    "data-portal",
-                    json.dumps({"uri": {"path": uri, "uuid": uuid5}}).encode("utf-8"),
-                )
-            except Exception as error:
-                logger.error("Cloud not connect to redis: %s", error)
-                yield "Internal error, service not available\n"
-                continue
-            output = f"{api_path}/{uuid5}.zarr"
+
+            zarr_path = await self.publish_to_zarr_stream(result)
+
             if catalogue_type == "intake":
-                result[self.uniq_key] = output
-                if num < num_results:
-                    suffix = ","
+                if "Internal error" in zarr_path:  # pragma: no cover
+                    intake_error_dict: Dict[str, List[Sized]] = {
+                        self.uniq_key: ["Internal error, service not available"],
+                        "format": ["zarr"],
+                    }
+                    processed = self._process_catalogue_result(intake_error_dict)
+                    output = json.dumps(processed, indent=3)
                 else:
-                    suffix = ""
-                output = json.dumps(self._process_catalogue_result(result), indent=3)
+                    result[self.uniq_key] = zarr_path
+                    output = json.dumps(
+                        self._process_catalogue_result(result), indent=3
+                    )
+
                 prefix = "   "
+                suffix = "," if num < num_results else ""
+            else:
+                output = zarr_path
+
             num += 1
             yield f"{prefix}{output}{suffix}\n"
 
