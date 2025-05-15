@@ -141,7 +141,7 @@ class Config:
     @property
     def zarr_loader_url(self) -> str:
         """Define the url for getting zarr files."""
-        return f"{self.databrowser_url}/load/{self.flavour}/"
+        return f"{self.databrowser_url}/load/{self.flavour}"
 
     @property
     def intake_url(self) -> str:
