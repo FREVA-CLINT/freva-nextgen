@@ -26,7 +26,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.requests import Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
 from freva_rest import __version__
 
@@ -59,6 +59,10 @@ metadata_tags = [
     {
         "name": "Authentication",
         "description": "These endpoints are for authentication.",
+    },
+    {
+        "name": "System",
+        "description": "System utility endpoints for monitoring and diagnostics.",
     },
 ]
 
@@ -108,6 +112,20 @@ async def custom_redoc_ui_html(request: Request) -> HTMLResponse:
         openapi_url="/api/freva-nextgen/help/openapi.json",
         title="Freva RestAPI",
         redoc_favicon_url="/favicon.ico",
+    )
+
+
+@app.get(
+    "/api/freva-nextgen/ping",
+    tags=["System"],
+    summary="Health check endpoint"
+)
+async def ping(request: Request) -> JSONResponse:
+    """Health check endpoint that returns
+        `pong` when the API is operational."""
+    return JSONResponse(
+        content={"ping": "pong"},
+        status_code=200,
     )
 
 

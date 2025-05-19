@@ -102,7 +102,7 @@ async def get_status(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required_dependency()),
+    current_user: TokenPayload = Depends(auth.create_auth_dependency()),
 ) -> JSONResponse:
     """Get the status of a loading process."""
     meta: Dict[str, Any] = await read_redis_data(uuid5, "status", timeout=timeout)
@@ -136,7 +136,7 @@ async def zemtadata(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required_dependency()),
+    current_user: TokenPayload = Depends(auth.create_auth_dependency()),
 ) -> JSONResponse:
     """Consolidate zarr metadata
 
@@ -179,7 +179,7 @@ async def zgroup(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required_dependency()),
+    current_user: TokenPayload = Depends(auth.create_auth_dependency()),
 ) -> JSONResponse:
     """Zarr group data.
 
@@ -223,7 +223,7 @@ async def zattrs(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required_dependency()),
+    current_user: TokenPayload = Depends(auth.create_auth_dependency()),
 ) -> JSONResponse:
     """Get zarr Attributes.
 
@@ -276,7 +276,7 @@ async def chunk_data(
             le=1500,
         ),
     ] = 1,
-    current_user: TokenPayload = Depends(auth.required_dependency()),
+    current_user: TokenPayload = Depends(auth.create_auth_dependency()),
 ) -> Response:
     """Get a zarr array chunk.
 

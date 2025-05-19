@@ -85,8 +85,8 @@ class SafeAuth:
             if self._auth is None and await self._check_server_available():
                 self._auth = Auth(self.discovery_url)
 
-    def required_dependency(
-        self,
+    def create_auth_dependency(
+        self, required: bool = True
     ) -> Callable[
         [SecurityScopes, Optional[HTTPAuthorizationCredentials]],
         Awaitable[IDToken],
@@ -103,22 +103,34 @@ class SafeAuth:
         ------
         HTTPException: 503 if the auth server is not available
         """
-
         async def dependency(
             security_scopes: SecurityScopes,
             authorization_credentials: Optional[
                 HTTPAuthorizationCredentials
-            ] = Depends(HTTPBearer()),
+            ] = Depends(HTTPBearer(auto_error=required)),
         ) -> IDToken:
             await self._ensure_auth_initialized()
 
             if self._auth is None:
-                raise HTTPException(
-                    status_code=503,
-                    detail="OIDC server unavailable, cannot validate token.",
-                )
+                if required:
+                    raise HTTPException(
+                        status_code=503,
+                        detail="OIDC server unavailable, cannot validate token.",
+                    )
+                else:
+                    logger.info("[Optional Auth]: OIDC server unavailable"
+                                ", cannot validate token")
+                    return None
 
-            return self._auth.required(security_scopes, authorization_credentials)
+            try:
+                return self._auth.required(security_scopes, authorization_credentials)
+            except HTTPException:
+                if not required:
+                    # skip the exception if not required
+                    logger.info("[Optional Auth]: OIDC validation failed,"
+                                "but not required for this endpoint")
+                    return None
+                raise
 
         return dependency
 
@@ -156,7 +168,7 @@ class Token(BaseModel):
 
 @app.get("/api/freva-nextgen/auth/v2/status", tags=["Authentication"])
 async def get_token_status(
-    id_token: IDToken = Security(auth.required_dependency()),
+    id_token: IDToken = Security(auth.create_auth_dependency()),
 ) -> TokenPayload:
     """Check the status of an access token."""
     return cast(TokenPayload, id_token)
@@ -188,7 +200,7 @@ async def oicd_request(
 
 @app.get("/api/freva-nextgen/auth/v2/userinfo", tags=["Authentication"])
 async def userinfo(
-    id_token: IDToken = Security(auth.required_dependency()),
+    id_token: IDToken = Security(auth.create_auth_dependency()),
     request: Request = Required,
 ) -> UserInfo:
     """Get userinfo for the current token."""

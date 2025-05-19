@@ -237,8 +237,48 @@ def test_extended_search(test_server: str) -> None:
         params={"facets": "activity_id", "max-results": 0},
     ).json()
     assert len(res7["search_results"]) == 0
+    # first get he tokenn to be able to use the zarr stream
+    token_res = requests.post(
+        f"{test_server}/auth/v2/token",
+        data={
+            "username": "janedoe",
+            "password": "janedoe123",
+            "grant_type": "password",
+        },
+    )
+    res8 = requests.get(
+        f"{test_server}/databrowser/extended-search/cmip6/uri",
+        params={"facets": "activity_id", "max-results": 1, "zarr_stream": True}, headers={
+            "Authorization": f"Bearer {token_res.json()['access_token']}"
+        }
+    ).json()
+    assert len(res8["search_results"]) == 1
 
+    res9 = requests.get(
+        f"{test_server}/databrowser/extended-search/cmip6/uri",
+        params={"facets": "activity_id", "max-results": 1, "zarr_stream": True}
+    )
+    assert res9.status_code == 401
+    with mock.patch("freva_rest.databrowser_api.core.create_redis_connection", None):
+        res10 = requests.get(
+            f"{test_server}/databrowser/extended-search/cmip6/uri",
+            params={"facets": "activity_id", "max-results": 1, "zarr_stream": True},
+            headers={
+                "Authorization": f"Bearer {token_res.json()['access_token']}"
+            },
+        ).json()
+        assert res10["search_results"][0]["uri"] == "Internal error, service not able to publish"
 
+    with mock.patch(
+        "freva_rest.rest.server_config.api_services",
+        "databrowser"
+    ):
+        res11 = requests.get(
+            f"{test_server}/databrowser/extended-search/cmip6/uri",
+            params={"facets": "activity_id", "max-results": 1, "zarr_stream": True}
+        )
+        # get the normal response
+        assert res11.status_code == 200
 def test_metadata_search(test_server: str) -> None:
     """Test the facet search functionality."""
     res1 = requests.get(
