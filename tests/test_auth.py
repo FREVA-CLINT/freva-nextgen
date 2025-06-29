@@ -7,7 +7,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, List, NamedTuple
+from typing import Any, Dict, List, NamedTuple, Optional
 from unittest.mock import AsyncMock, patch
 
 import jwt
@@ -19,6 +19,7 @@ from typer.testing import CliRunner
 
 from freva_client.auth import Auth, AuthError, authenticate
 from freva_client.cli import app as cli_app
+from freva_client.query import databrowser
 from freva_client.utils.auth_utils import TOKEN_ENV_VAR, wait_for_port
 
 from .conftest import mock_token_data
@@ -279,31 +280,6 @@ def test_authenticate_with_login_flow(
             "freva_client.utils.auth_utils.is_interactive_auth_possible",
             return_value=True,
         )
-        for auto in (True, False):
-            with NamedTemporaryFile(suffix=".json") as temp_f:
-                with patch.dict(
-                    os.environ, {TOKEN_ENV_VAR: temp_f.name}, clear=False
-                ):
-                    auth_instance._auth_token = None
-                    login_thread = threading.Thread(
-                        target=auth_instance.authenticate,
-                        args=("https://example.com",),
-                        kwargs={"force": True, "_auto": auto},
-                        daemon=True,
-                    )
-                    login_thread.start()
-                    code = "fake-code"
-                    wait_for_port("localhost", free_port)
-                    requests.get(
-                        f"http://localhost:{free_port}/callback?code={code}"
-                    )
-                    login_thread.join(timeout=2)
-                    result_token = auth_instance._auth_token
-
-                assert result_token["access_token"] == check_token["access_token"]
-                assert (
-                    result_token["refresh_token"] == check_token["refresh_token"]
-                )
         with NamedTemporaryFile(suffix=".json") as temp_f:
             with patch.dict(
                 os.environ, {TOKEN_ENV_VAR: temp_f.name}, clear=False
@@ -312,7 +288,27 @@ def test_authenticate_with_login_flow(
                 login_thread = threading.Thread(
                     target=auth_instance.authenticate,
                     args=("https://example.com",),
-                    kwargs={"force": True, "_auto": auto},
+                    kwargs={"force": True},
+                    daemon=True,
+                )
+                login_thread.start()
+                code = "fake-code"
+                wait_for_port("localhost", free_port)
+                requests.get(f"http://localhost:{free_port}/callback?code={code}")
+                login_thread.join(timeout=2)
+                result_token = auth_instance._auth_token
+
+            assert result_token["access_token"] == check_token["access_token"]
+            assert result_token["refresh_token"] == check_token["refresh_token"]
+        with NamedTemporaryFile(suffix=".json") as temp_f:
+            with patch.dict(
+                os.environ, {TOKEN_ENV_VAR: temp_f.name}, clear=False
+            ):
+                auth_instance._auth_token = None
+                login_thread = threading.Thread(
+                    target=auth_instance.authenticate,
+                    args=("https://example.com",),
+                    kwargs={"force": True},
                     daemon=True,
                 )
                 login_thread.start()
@@ -320,6 +316,58 @@ def test_authenticate_with_login_flow(
                 requests.get(f"http://localhost:{free_port}/callback?foo=bar")
                 login_thread.join(timeout=2)
 
+    finally:
+        auth_instance._auth_token = token
+
+
+@pytest.mark.parametrize(
+    "strategy, expected",
+    [
+        ("browser_auth", None),
+        ("access_token", "whatever"),  # note the correct spelling
+    ],
+)
+def test_auth_token_simple_strategies(
+    strategy: str, expected: Optional[str]
+) -> None:
+    """The databrowser auth_token preperty for non-refresh methods."""
+    auth_instance = Auth()
+    token = deepcopy(auth_instance._auth_token)
+    try:
+        auth_instance._auth_token = None
+        db = databrowser()
+        with (
+            patch("freva_client.query.load_token", return_value="whatever"),
+            patch(
+                "freva_client.query.choose_token_strategy",
+                return_value=strategy,
+            ),
+        ):
+            result = db.auth_token
+            assert result == expected
+    finally:
+        auth_instance._auth_token = token
+
+
+def test_auth_token_refresh_token_calls_authenticate():
+    auth_instance = Auth()
+    token = deepcopy(auth_instance._auth_token)
+    try:
+        auth_instance._auth_token = None
+        db = databrowser()
+        with (
+            patch("freva_client.query.load_token", return_value="whatever"),
+            patch(
+                "freva_client.query.choose_token_strategy",
+                return_value="refresh_token",
+            ),
+            patch.object(
+                db._auth, "authenticate", return_value="NEW_TOKEN"
+            ) as mock_auth,
+        ):
+            result = db.auth_token
+            mock_auth.assert_called_once_with(config=db._cfg)
+            assert result == "NEW_TOKEN"
     finally:
         auth_instance._auth_token = token
 
@@ -363,6 +411,10 @@ def test_cli_auth(
     old_token = deepcopy(auth_instance._auth_token)
 
     mocker.patch.object(auth_instance, "_login", return_value=mock_token_data())
+    mocker.patch(
+        "freva_client.utils.auth_utils.is_interactive_auth_possible",
+        return_value=True,
+    )
     try:
 
         with NamedTemporaryFile(suffix=".json") as temp_f:
@@ -401,6 +453,9 @@ def test_cli_auth_failed(
         raise AuthError("Timetout")
 
     mocker.patch.object(auth_instance, "_login", side_effect=failed_login)
+    mocker.patch(
+        "freva_client.auth.choose_token_strategy", return_value="browser_auth"
+    )
     try:
         res = cli_runner.invoke(cli_app, ["auth", "--host", test_server])
         assert res.exit_code == 1

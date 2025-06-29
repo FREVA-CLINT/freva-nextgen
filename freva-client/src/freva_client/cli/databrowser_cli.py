@@ -289,7 +289,7 @@ def data_search(
     token_file: Optional[Path] = typer.Option(
         None,
         "--token-file",
-        "-t",
+        "-tf",
         help=(
             "Instead of authenticating via code based authentication flow "
             "you can set the path to the json file that contains a "
@@ -468,6 +468,7 @@ def intake_catalogue(
     token_file: Optional[Path] = typer.Option(
         None,
         "--token-file",
+        "-tf",
         help=(
             "Instead of authenticating via code based authentication flow "
             "you can set the path to the json file that contains a "
@@ -861,6 +862,7 @@ def user_data_add(
     token_file: Optional[Path] = typer.Option(
         None,
         "--token-file",
+        "-tf",
         help=(
             "Instead of authenticating via code based authentication flow "
             "you can set the path to the json file that contains a "
@@ -917,6 +919,7 @@ def user_data_delete(
     token_file: Optional[Path] = typer.Option(
         None,
         "--token-file",
+        "-tf",
         help=(
             "Instead of authenticating via code based authentication flow "
             "you can set the path to the json file that contains a "

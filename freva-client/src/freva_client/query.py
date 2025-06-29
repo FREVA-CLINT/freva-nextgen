@@ -28,6 +28,7 @@ from rich import print as pprint
 
 from .auth import Auth
 from .utils import logger
+from .utils.auth_utils import Token, choose_token_strategy, load_token
 from .utils.databrowser_utils import Config, UserDataHandler
 
 __all__ = ["databrowser"]
@@ -205,6 +206,8 @@ class databrowser:
 
     .. code-block:: python
 
+        from freva_client import authenticate
+        token_info = authenticate()
         import xarray as xr
         dset = xr.open_dataset(
            zarr_files[0],
@@ -384,6 +387,41 @@ class databrowser:
             raise ValueError(
                 f"Couldn't write catalogue content: {error}"
             ) from None
+
+    @property
+    def auth_token(self) -> Optional[Token]:
+        """Get the current OAuth2 token - if it is still valid.
+
+        Returns
+        -------
+        Token:
+            If the OAuth2 token exists,is valid and can be used it will
+            be returned, None otherwise.
+
+        Example
+        -------
+
+        .. code-block:: python
+
+            from freva_client import databrowser
+            import xarray as xr
+            db = databrowser(dataset="cmip6-hsm", stream_zarr=True)
+            dset = xr.open_dataset(
+               zarr_files[0],
+               chunks="auto",
+               engine="zarr",
+               storage_options={"headers":
+                    {"Authorization": f"Bearer {db.auth_token['access_token']}"}
+               }
+            )
+        """
+        token = self._auth._auth_token or load_token(self._auth.token_file)
+        strategy = choose_token_strategy(token)
+        if strategy in ("browser_auth", "fail"):
+            return None
+        if strategy == "refresh_token":
+            token = self._auth.authenticate(config=self._cfg)
+        return token
 
     def intake_catalogue(self) -> intake_esm.core.esm_datastore:
         """Create an intake esm catalogue object from the search.

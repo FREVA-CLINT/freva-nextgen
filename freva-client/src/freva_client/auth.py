@@ -243,17 +243,16 @@ class Auth:
         config: Optional[Config] = None,
         *,
         force: bool = False,
-        _auto: bool = True,
         _cli: bool = False,
     ) -> Token:
         """Authenticate the user to the host."""
         cfg = config or Config(host)
         token = self._auth_token or load_token(self.token_file)
         reason: Optional[str] = None
-        if _auto:
-            strategy = choose_token_strategy(token)
-        else:
+        if force:
             strategy = "browser_auth"
+        else:
+            strategy = choose_token_strategy(token)
         if strategy == "use_token" and token:
             self._auth_token = token
             return self._auth_token
@@ -261,8 +260,6 @@ class Auth:
             if strategy == "refresh_token" and token:
                 return self._refresh(cfg.auth_url, token["refresh_token"])
             if strategy == "browser_auth":
-                if _auto:
-                    logger.warning("Automatically launching browser-based login")
                 return self._login(cfg.auth_url, force=force)
         except AuthError as error:
             reason = str(error)
@@ -330,5 +327,4 @@ def authenticate(
     return auth.authenticate(
         host=host,
         force=force,
-        _auto=False,
     )

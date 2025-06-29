@@ -59,6 +59,5 @@ def authenticate_cli(
         host=host,
         force=force,
         _cli=True,
-        _auto=False,
     )
     print(json.dumps(token, indent=3))
