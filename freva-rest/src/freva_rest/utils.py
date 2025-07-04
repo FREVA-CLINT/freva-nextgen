@@ -1,6 +1,7 @@
 """Various utilities for the restAPI."""
 
 import re
+import ssl
 from typing import Any, Dict, List, Optional, cast
 
 import jwt
@@ -119,6 +120,7 @@ async def create_redis_connection(
         ssl_certfile=CONFIG.redis_ssl_certfile or None,
         ssl_keyfile=CONFIG.redis_ssl_keyfile or None,
         ssl_ca_certs=CONFIG.redis_ssl_certfile or None,
+        ssl_cert_reqs=ssl.CERT_NONE,
         db=0,
     )
     try:

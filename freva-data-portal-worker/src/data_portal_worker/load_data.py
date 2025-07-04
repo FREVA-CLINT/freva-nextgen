@@ -2,6 +2,7 @@
 
 import json
 import os
+import ssl
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, Tuple, TypedDict, cast
@@ -82,6 +83,7 @@ class RedisCacheFactory(redis.Redis):
             ssl_certfile=conn["ssl_certfile"],
             ssl_keyfile=conn["ssl_keyfile"],
             ssl_ca_certs=conn["ssl_ca_certs"],
+            ssl_cert_reqs=ssl.CERT_NONE,
         )
 
 

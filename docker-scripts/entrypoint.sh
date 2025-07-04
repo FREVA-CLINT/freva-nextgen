@@ -14,24 +14,58 @@ check_env(){
 }
 
 run_freva_rest() {
-    check_env API_OIDC_DISCOVERY_URL freva-rest
     log_service "Starting freva-rest API"
-    if [ "${CACHE_CONFIG:-}" ];then
-        echo $CACHE_CONFIG | base64 --decode | jq -r .ssl_cert > $API_REDIS_SSL_CERTFILE
-        echo $CACHE_CONFIG | base64 --decode | jq -r .ssl_key > $API_REDIS_SSL_KEYFILE
-        export API_REDIS_USER=$(echo $CACHE_CONFIG | base64 --decode | jq -r .user)
-        export API_REDIS_PASSWORD=$(echo $CACHE_CONFIG | base64 --decode | jq -r .passwd)
+
+    if [ -n "${CACHE_CONFIG:-}" ]; then
+        # Decode CACHE_CONFIG once
+        decoded_cache_config=$(echo "${CACHE_CONFIG}" | base64 --decode)
+
+        # Set SSL file paths
+        export API_REDIS_SSL_CERTFILE=/tmp/redis.crt
+        export API_REDIS_SSL_KEYFILE=/tmp/redis.key
+
+        # Write SSL cert and key to files
+        echo "$decoded_cache_config" | jq -r .ssl_cert > "$API_REDIS_SSL_CERTFILE"
+        echo "$decoded_cache_config" | jq -r .ssl_key > "$API_REDIS_SSL_KEYFILE"
+
+        # Export environment variables
+        export API_REDIS_USER=$(echo "$decoded_cache_config" | jq -r .user)
+        export API_REDIS_PASSWORD=$(echo "$decoded_cache_config" | jq -r .passwd)
     fi
+
+    # Run the Python freva-rest CLI
     python3 -m freva_rest.cli "$@"
 }
 
+
 run_data_loader() {
     log_service "Starting data-loader"
-    if [ "${CACHE_CONFIG:-}" ];then
-        echo "${CACHE_CONFIG}" > $API_CONFIG
+
+    if [ -n "${CACHE_CONFIG:-}" ]; then
+        # Decode CACHE_CONFIG once
+        decoded_cache_config=$(echo "${CACHE_CONFIG}" | base64 --decode)
+
+        # Create directories for SSL files
+        API_REDIS_SSL_CERTFILE=$(echo "$decoded_cache_config" | jq -r .ssl_keyfile)
+        API_REDIS_SSL_KEYFILE=$(echo "$decoded_cache_config" | jq -r .ssl_keyfile)
+        mkdir -p "$(dirname "$API_REDIS_SSL_CERTFILE")"
+        mkdir -p "$(dirname "$API_REDIS_SSL_KEYFILE")"
+
+        # Write SSL cert and key to files
+        echo "$decoded_cache_config" | jq -r .ssl_cert > "$API_REDIS_SSL_CERTFILE"
+        echo "$decoded_cache_config" | jq -r .ssl_key > "$API_REDIS_SSL_KEYFILE"
+
+        # Export environment variables
+        export API_REDIS_SSL_CERTFILE
+        export API_REDIS_SSL_KEYFILE
+        export API_REDIS_USER=$(echo "$decoded_cache_config" | jq -r .user)
+        export API_REDIS_PASSWORD=$(echo "$decoded_cache_config" | jq -r .passwd)
     fi
+
+    # Run the Python data loader
     python3 -m data_portal_worker "$@"
 }
+
 
 dispatch_command() {
     local command="${1:-$CONTAINER}"
